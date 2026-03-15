@@ -3,7 +3,7 @@ LLM - DUO - RUN AWAY - #01
 
 INTRODUCTION
 
-Within the KUZ NETWORK laboratory, a new experiment will soon be set up around the local execution of open-source language models. This project, called Local LLM Duo, will consist of running two distinct models on two different machines and then automating their exchanges through a central orchestrator.
+Within THE KUZ NETWORK laboratory, a new experiment will soon be set up around the local execution of open-source language models. This project, called Local LLM Duo, will consist of running two distinct models on two different machines and then automating their exchanges through a central orchestrator.
 
 The goal will not be to produce a simple demonstration effect. The project will primarily serve as a working platform to study how several open-source components can be assembled into a coherent local environment --> Linux system, GPU drivers, inference engine, LLM models, network API, and orchestration logic.
 
