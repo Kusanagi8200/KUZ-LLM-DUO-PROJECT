@@ -1,8 +1,9 @@
-#### INSTALL FIRST MACHINE - FHC2 - KUZAI NODE
+#### LLM - DUO - RUN AWAY - #02
 
-WHAT'S INSIDE THE BLACK BOX ? 
+####  WHAT'S INSIDE THE BLACK BOX ? 
 
-INSTALLING THE FIRST MACHINE - FHC2 / KUZAI NODE
+___________________________________________________________________________________________________________________
+####  INSTALLING THE FIRST MACHINE - FHC2 / KUZAI NODE
 
 The first node of the LLM Duo project was installed and prepared as a dedicated local inference machine for THE KUZ NETWORK lab. 
 The goal of this phase was not only to get a model running, but to turn the machine into a clean, reproducible, headless Linux node ready to host 
