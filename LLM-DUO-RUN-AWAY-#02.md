@@ -1,35 +1,21 @@
 #### INSTALL FIRST MACHINE - FHC2 - KUZAI NODE
 
 WHAT'S INSIDE THE BLACK BOX ? 
+
 INSTALLING THE FIRST MACHINE - FHC2 / KUZAI NODE
 
-The first node of the LLM Duo project was installed and prepared as a dedicated local inference machine for THE KUZ NETWORK lab. The goal of this phase was not only to get a model running, but to turn the machine into a clean, reproducible, headless Linux node ready to host a local open-source LLM and later integrate into a two-node orchestration workflow.
-1. HARDWARE CHECK
+The first node of the LLM Duo project was installed and prepared as a dedicated local inference machine for THE KUZ NETWORK lab. 
+The goal of this phase was not only to get a model running, but to turn the machine into a clean, reproducible, headless Linux node ready to host 
+a local open-source LLM and later integrate into a two-node orchestration workflow.
 
-The machine used for this first node is FHC2, an Acer Nitro ANV15-52 running Ubuntu 24.04.4 LTS with kernel 6.17.0-19-generic. It is equipped with an Intel Core i9-13900H, 32 GiB of RAM, and an NVIDIA RTX 5060 Laptop GPU. Storage is provided by a 1 TB Kingston NVMe drive, with the system currently installed on a single main ext4 partition. The machine boots in UEFI mode.
-2. SYSTEM CLEANUP
+___________________________________________________________________________________________________________________
+#### 1/ HARDWARE CHECK
 
-The initial Ubuntu Desktop installation was converted into a server-style node. The graphical stack was disabled by switching the default target to multi-user.target, and the machine was kept reachable over SSH and Wi-Fi through NetworkManager. The purpose of this step was to remove the desktop overhead and keep only the components required for remote administration, networking, NVIDIA support, and local inference.
-3. HEADLESS HARDENING
+The machine used for this first node is FHC2, an Acer Nitro ANV15-52 running Ubuntu 24.04.4 LTS with kernel 6.17.0-19-generic.
+It is equipped with an Intel Core i9-13900H, 32 GiB of RAM, and an NVIDIA RTX 5060 Laptop GPU. 
+Storage is provided by a 1 TB Kingston NVMe drive, with the system currently installed on a single main ext4 partition. The machine boots in UEFI mode.
 
-Because this first node is a laptop-based machine, additional hardening was applied to avoid unwanted power-management behavior. Lid switch actions were disabled, idle-triggered actions were disabled, and sleep, suspend, hibernate, and hybrid-sleep targets were masked. The node was therefore turned into a more stable headless lab system suitable for long-running local inference sessions.
-4. NVIDIA DRIVER AND CUDA ENVIRONMENT
-
-The machine was prepared with the NVIDIA 580 open driver stack, which successfully loaded on the RTX 5060 Laptop GPU. After that, the CUDA 13.2 toolkit was installed and validated with nvcc, confirming that the system was ready for CUDA-based compilation and inference workloads. This step was essential before building the LLM runtime itself.
-5. BUILDING LLAMA.CPP
-
-The llama.cpp repository was cloned locally and compiled from source with CUDA support enabled using CMake and Ninja. The resulting build produced the expected binaries, including llama-cli and llama-server, and dynamic linking checks confirmed that CUDA and cuBLAS libraries were correctly resolved. This established the local inference engine for the node.
-6. FIRST CLI AND API TESTS
-
-An initial validation was performed with Gemma 3 1B IT in GGUF format to confirm that the CUDA build and local inference path were functional. After successful CLI and API tests, the node was then reworked to better match the project goals by replacing the Google model with a fully open-source alternative.
-7. OPEN-SOURCE MODEL SELECTION
-
-The final model retained for node A is Mistral-7B-Instruct-v0.3 Q4_K_M in GGUF format. The model file was stored under /opt/llm/models, and the serving layer was configured around it. This choice is more consistent with the direction of the LLM Duo project, which aims to build a local, open-source, reproducible two-node setup rather than rely on a model that does not fully match that framing.
-
-
-#### HARDWARE CHECK
-
-```bash
+```
 hostnamectl
 cat /etc/os-release
 uname -a
@@ -68,9 +54,14 @@ df -hT
 blkid /dev/nvme0n1p2 /dev/nvme0n1p3 /dev/nvme0n1p4
 ```
 
-#### SYSTEM CLEANUP
+___________________________________________________________________________________________________________________
+#### 2/ SYSTEM CLEANUP
 
-```bash
+The initial Ubuntu Desktop installation was converted into a server-style node. 
+The graphical stack was disabled by switching the default target to multi-user.target, and the machine was kept reachable over SSH and Wi-Fi through NetworkManager. 
+The purpose of this step was to remove the desktop overhead and keep only the components required for remote administration, networking, NVIDIA support, and local inference.
+
+```
 systemctl set-default multi-user.target
 systemctl disable gdm3.service
 reboot
@@ -129,9 +120,14 @@ ip -br a
 nvidia-smi
 ```
 
-#### HEADLESS HARDENING
+___________________________________________________________________________________________________________________
+#### 3/ HEADLESS HARDENING
 
-```bash
+Because this first node is a laptop-based machine, additional hardening was applied to avoid unwanted power-management behavior. 
+Lid switch actions were disabled, idle-triggered actions were disabled, and sleep, suspend, hibernate, and hybrid-sleep targets were masked. 
+The node was therefore turned into a more stable headless lab system suitable for long-running local inference sessions.
+
+```
 mkdir -p /etc/systemd/logind.conf.d
 
 cat > /etc/systemd/logind.conf.d/headless.conf <<'EOF'
@@ -195,9 +191,14 @@ ip -br a
 nvidia-smi
 ```
 
-#### LLM NODE PREPARATION
+___________________________________________________________________________________________________________________
+#### 4/ LLM NODE PREPARATION
 
-```bash
+The machine was prepared with the NVIDIA 580 open driver stack, which successfully loaded on the RTX 5060 Laptop GPU. 
+After that, the CUDA 13.2 toolkit was installed and validated with nvcc, confirming that the system was ready for CUDA-based compilation and inference workloads. 
+This step was essential before building the LLM runtime itself.
+
+```
 apt update
 
 apt install -y \
@@ -257,9 +258,14 @@ nvcc --version
 ls -ld /usr/local/cuda /usr/local/cuda-13.2
 ```
 
-#### CLONING AND COMPILATION OF LLAMA.CPP
+___________________________________________________________________________________________________________________
+#### 5/ CLONING AND COMPILATION OF LLAMA.CPP
 
-```bash
+The llama.cpp repository was cloned locally and compiled from source with CUDA support enabled using CMake and Ninja. 
+The resulting build produced the expected binaries, including llama-cli and llama-server, and dynamic linking checks confirmed that CUDA and cuBLAS libraries were correctly resolved. 
+This established the local inference engine for the node.
+
+```
 cd /opt/src
 
 git clone https://github.com/ggml-org/llama.cpp
@@ -273,9 +279,13 @@ ls -1 build/bin | grep '^llama-' || true
 ldd build/bin/llama-cli | egrep 'cuda|cublas|cudart|stdc\+\+|libm|libpthread' || true
 ```
 
-#### FIRST CLI TEST / LOADING MODEL = GEMMA-3-1B-IT-GGUF:Q4_K_M
+___________________________________________________________________________________________________________________
+#### 6/ FIRST CLI TEST / LOADING MODEL = GEMMA-3-1B-IT-GGUF:Q4_K_M
 
-```bash
+An initial validation was performed with Gemma 3 1B IT in GGUF format to confirm that the CUDA build and local inference path were functional. 
+After successful CLI and API tests, the node was then reworked to better match the project goals by replacing the Google model with a fully open-source alternative.
+
+```
 cd /opt/src/llama.cpp
 ./build/bin/llama-cli -hf ggml-org/gemma-3-1b-it-GGUF:Q4_K_M
 nvidia-smi
@@ -283,7 +293,7 @@ nvidia-smi
 
 #### START LLAMA-SERVER
 
-```bash
+```
 ./build/bin/llama-server \
   -hf ggml-org/gemma-3-1b-it-GGUF:Q4_K_M \
   --host 0.0.0.0 \
@@ -292,7 +302,7 @@ nvidia-smi
 
 #### API TEST
 
-```bash
+```
 ss -ltnp | grep 8080
 
 curl -s http://127.0.0.1:8080/v1/models | jq
@@ -306,9 +316,14 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
   }' | jq '.choices[0].message.content'
 ```
 
-#### OPEN-SOURCE MODEL CONFIGURATION
+___________________________________________________________________________________________________________________
+#### 7/ OPEN-SOURCE MODEL CONFIGURATION
 
-```bash
+The final model retained for node A is Mistral-7B-Instruct-v0.3 Q4_K_M in GGUF format. 
+The model file was stored under /opt/llm/models, and the serving layer was configured around it. This choice is more consistent with the direction of the LLM Duo project, 
+which aims to build a local, open-source, reproducible two-node setup rather than rely on a model that does not fully match that framing.
+
+```
 systemctl disable --now llama-server-a.service 2>/dev/null || true
 rm -f /etc/systemd/system/llama-server-a.service
 systemctl daemon-reload
@@ -383,9 +398,10 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
   }' | jq '.choices[0].message.content'
 ```
 
-#### ORCHESTRATOR ENVIRONMENT PREPARATION
+___________________________________________________________________________________________________________________
+#### 8/ ORCHESTRATOR ENVIRONMENT PREPARATION
 
-```bash
+```
 mkdir -p /opt/llm/orchestrator
 python3 -m venv /opt/llm/orchestrator/venv
 /opt/llm/orchestrator/venv/bin/pip install --upgrade pip requests
@@ -430,9 +446,10 @@ chmod 755 /opt/llm/orchestrator/test_node_a.py
 /opt/llm/orchestrator/test_node_a.py
 ```
 
-#### LOCAL ORCHESTRATOR VALIDATION
+___________________________________________________________________________________________________________________
+#### 9/ LOCAL ORCHESTRATOR VALIDATION
 
-```bash
+```
 cat > /opt/llm/orchestrator/duo_loop_local.py <<'EOF'
 #!/opt/llm/orchestrator/venv/bin/python3
 
@@ -658,3 +675,7 @@ chmod 755 /opt/llm/orchestrator/duo_loop_local.py
   --topic "Analyze the target architecture of the LLM Duo project and propose the first technical deployment choices." \
   --turns 6
 ```
+___________________________________________________________________________________________________________________
+
+KUSANAGI8200 - THE KUZ NETWORK - @2026
+
