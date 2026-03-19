@@ -193,7 +193,6 @@ apt install -y \
   pciutils
 
 ````
-
 ````
 apt-mark hold \
   nvidia-driver-575 \
@@ -202,7 +201,6 @@ apt-mark hold \
   nvidia-dkms-575
 
 ````
-
 ````
 wget -O /usr/share/keyrings/cuda-archive-keyring.gpg \
   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-archive-keyring.gpg
@@ -211,7 +209,6 @@ wget -O /etc/apt/preferences.d/cuda-repository-pin-600 \
   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
 
 ````
-
 ````
 cat > /etc/apt/sources.list.d/cuda-ubuntu2204.list <<'EOF'
 deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /
@@ -242,7 +239,6 @@ chmod 644 /etc/profile.d/cuda.sh
 source /etc/profile.d/cuda.sh
 
 ````
-
 ````
 echo
 echo "===== CUDA TOOLKIT ====="
@@ -277,7 +273,6 @@ export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 ````
-
 ````
 hash -r
 which nvcc || true
@@ -294,13 +289,11 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 EOF
 
 ````
-
 ````
 chmod 644 /etc/profile.d/cuda.sh
 ln -sf /etc/profile.d/cuda.sh /etc/profile.d/zz-cuda.sh
 
 ````
-
 ````
 apt update
 apt install -y \
@@ -320,7 +313,6 @@ apt install -y \
   pciutils
 
 ````
-
 ````
 mkdir -p /opt/src
 mkdir -p /opt/llm
@@ -336,14 +328,12 @@ export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 ````
-
 ````
 cmake -S . -B build -G Ninja -DGGML_CUDA=ON
 
 cmake --build build --config Release -j"$(nproc)"
 
 ````
-
 ````
 echo
 echo "===== BINARIES ====="
@@ -363,7 +353,6 @@ export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 ````
-
 ````
 ./build/bin/llama-cli -hf bartowski/granite-3.1-3b-a800m-instruct-GGUF:granite-3.1-3b-a800m-instruct-Q4_K_M.gguf
 
@@ -408,7 +397,6 @@ chown -R llm:llm /var/log/llm-duo
 ls -lh /opt/llm/models
 
 ````
-
 ````
 cat > /etc/systemd/system/llama-server-b.service <<'EOF'
 [Unit]
