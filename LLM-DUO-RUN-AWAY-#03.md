@@ -1,9 +1,9 @@
-#### LLM - DUO - RUN AWAY - #03
+#### ``LLM - DUO - RUN AWAY - #03``
 
-#### WHAT'S INSIDE THE BLACK BOX ?
+#### ``WHAT'S INSIDE THE BLACK BOX ?``
 
 ___________________________________________________________________________________________________________________
-####  INSTALLING THE SECOND MACHINE - FHC / DARK-AI NODE
+####  ``INSTALLING THE SECOND MACHINE - FHC / DARK-AI NODE``
 
 Deploying the second node, the llama.cpp server, the orchestrator, and the first dialogues between two local models.
 
@@ -14,7 +14,7 @@ After preparing the first node, this new phase focused on installing the second 
 and then validating the whole chain with the first automated dialogue tests.
 
 ___________________________________________________________________________________________________________________
-####  1/ INSTALLING THE SECOND NODE
+####  ``1/ INSTALLING THE SECOND NODE``
 
 The first phase was dedicated to preparing the second machine in the lab. The goal was not just to run a model on it, but to turn it into a real compute node dedicated to the project.
 
@@ -24,7 +24,7 @@ Once this baseline was validated, the environment was cleaned up to remove compo
 This step mattered because it allowed the node to start again from a cleaner, more readable, and more coherent base aligned with the architecture chosen for the project.
 
 ___________________________________________________________________________________________________________________
-####  2/ INSTALLING THE LLAMA.CPP SERVER
+####  ``2/ INSTALLING THE LLAMA.CPP SERVER``
 
 Once the node itself was ready, the next logical step was to install the inference engine selected for the lab --> llama.cpp.
 
@@ -37,7 +37,7 @@ The idea was not to push the machine to its absolute limit, but to keep the setu
 At the end of this phase, the second node was exposing a working local API through llama.cpp, just like the first one.
 
 ___________________________________________________________________________________________________________________
-####  3/ BUILDING THE ORCHESTRATOR
+####  ``3/ BUILDING THE ORCHESTRATOR``
 
 Once both nodes were able to answer locally, the next essential component of the project had to be built: the orchestrator.
 
@@ -49,7 +49,7 @@ The objective at this stage was not yet to build a finished application, but rat
 This phase also made it possible to improve how instructions are sent to the models, so that the exchange would avoid overly generic drifts or responses that were unnecessarily long.
 
 ___________________________________________________________________________________________________________________
-####  4. TESTING THE DIALOGUE BETWEEN THE TWO MODELS
+####  ``4. TESTING THE DIALOGUE BETWEEN THE TWO MODELS``
 
 Once the orchestrator was ready, several dialogue tests were launched between the two nodes.
 
@@ -63,7 +63,7 @@ the setup toward a cleaner, more general, and more usable dialogue framework.
 In other words, this phase validated not only the technical operation of the project, but also the first practical lessons on how to make two local AIs interact in a meaningful way.
 
 ___________________________________________________________________________________________________________________
-####  5. BUILDING A SMALL BASH APP TO LAUCH DISCUSSIONS
+####  ``5. BUILDING A SMALL BASH APP TO LAUCH DISCUSSIONS``
 
 To make the system easier to use, a small Bash launcher was then added to the project.
 
@@ -73,7 +73,7 @@ This interactive launcher now allows the user to fill only the useful variables,
 This Bash layer does not replace the Python orchestrator. It simply acts as a lightweight launch interface, useful for chaining tests more comfortably and making the whole project easier to operate in day-to-day lab work.
 
 ___________________________________________________________________________________________________________________
-####  6. CURRENT STATE OF THE PROJECT
+####  ``6. CURRENT STATE OF THE PROJECT``
 
 At this point, the LOCAL LLM DUO PROJECT has reached an important milestone.
 
@@ -86,9 +86,9 @@ where the goal is no longer only to install infrastructure, but to improve the a
 So the project is progressing as planned --> first the technical foundation, then operational stability, and gradually after that, the quality of the dialogue itself.
 
 ___________________________________________________________________________________________________________________
-####  TEKNICAL VIEW + TESTS
+####  ``TEKNICAL VIEW + TESTS``
 
-####  1/ HARWARE CHECK
+####  ``1/ HARWARE CHECK``
 
 ```
 hostnamectl
@@ -139,7 +139,7 @@ dpkg -l | egrep 'nvidia|cuda|nouveau' || true
 lsmod | egrep 'nvidia|nouveau' || true
 ````
 ___________________________________________________________________________________________________________________
-####  2/ DELETING OLLAMA ENGINE 
+####  ``2/ DELETING OLLAMA ENGINE`` 
 
 ````
 systemctl disable --now ollama 2>/dev/null || true
@@ -171,7 +171,7 @@ which ollama || true
 find /etc/systemd/system /usr/local/bin /usr/share /var/lib /var/log /root /home -maxdepth 3 \( -iname '*ollama*' -o -iname '.ollama' \) 2>/dev/null
 ````
 ___________________________________________________________________________________________________________________
-####  3/ PREPARE CUDA AND TOOLCHAIN
+####  ``3/ PREPARE CUDA AND TOOLCHAIN``
 
 ````
 apt update
@@ -225,7 +225,7 @@ echo "===== GPU ====="
 nvidia-smi
 ````
 ___________________________________________________________________________________________________________________
-4/ SIMULATION AND INSTALL CUDA TOOLKIT
+#### 4/ ``SIMULATION AND INSTALL CUDA TOOLKIT``
 
 ````
 apt install -y cuda-toolkit-12-9
@@ -280,7 +280,7 @@ which nvcc || true
 nvcc --version || true
 ````
 ___________________________________________________________________________________________________________________
-5/ PERSISTENCE CUDA + BUILD llama.cpp
+#### ``5/ PERSISTENCE CUDA + BUILD llama.cpp``
 
 ````
 cat > /etc/profile.d/cuda.sh <<'EOF'
@@ -345,7 +345,7 @@ ldd build/bin/llama-cli | egrep 'cuda|cublas|cudart|stdc\+\+|libm|libpthread' ||
 ````
 
 ___________________________________________________________________________________________________________________
-####  6/ MODEL 3B CLI TEST
+####  ``6/ MODEL 3B CLI TEST``
 
 ````
 cd /opt/src/llama.cpp
@@ -379,7 +379,7 @@ Hello! How can I assist you today? Let's chat about anything you'd like.
 [ Prompt: 307,4 t/s | Generation: 136,1 t/s ]
 ````
 ___________________________________________________________________________________________________________________
-####  7/ RUNING NODE 2 - DARK-AI LLM
+####  ``7/ RUNING NODE 2 - DARK-AI LLM``
 
 ````
 mkdir -p /opt/llm/models
@@ -450,7 +450,6 @@ WantedBy=multi-user.target
 EOF
 
 ````
-
 ````
 systemctl daemon-reload
 systemctl enable --now llama-server-b.service
@@ -458,7 +457,6 @@ systemctl status llama-server-b.service --no-pager -l
 ss -ltnp | grep 8080
 
 ````
-
 ````
 curl -s http://127.0.0.1:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -472,7 +470,7 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
 ````
 
 ___________________________________________________________________________________________________________________
-####  8/ CONNECTIVITY TEST FROM NODE 1 - KUZAI-LLM
+####  ``8/ CONNECTIVITY TEST FROM NODE 1 - KUZAI-LLM``
 
 ````
 curl -s http://10.39.46.126:8080/v1/chat/completions \
@@ -821,7 +819,7 @@ chmod 755 /opt/llm/orchestrator/duo_loop_ab.py
 tail -n 120 /opt/llm/orchestrator/runs/run-ab-*/transcript.md
 ````
 ___________________________________________________________________________________________________________________
-9/ SIMPLE PING-PONG TEST 
+#### ``9/ SIMPLE PING-PONG TEST``
 
 ````
 cat > /opt/llm/orchestrator/duo_loop_ab.py <<'EOF'
@@ -1258,7 +1256,7 @@ chmod 755 /opt/llm/orchestrator/duo_loop_ab.py
 ````
 
 ___________________________________________________________________________________________________________________
-TEST 01
+#### ``TEST 01``
 ````
 /opt/llm/orchestrator/duo_loop_ab.py \
   --url-a http://127.0.0.1:8080/v1/chat/completions \
@@ -1272,4 +1270,4 @@ TEST 01
 
 ___________________________________________________________________________________________________________________
 
-KUSANAGI8200 - THE KUZ NETWORK - @2026 
+#### ``KUSANAGI8200 - THE KUZ NETWORK - @2026`` 
