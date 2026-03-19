@@ -1,16 +1,16 @@
-#### LLM - DUO - RUN AWAY - #02
+#### ``LLM - DUO - RUN AWAY - #02``
 
-####  WHAT'S INSIDE THE BLACK BOX ? 
+####  ``WHAT'S INSIDE THE BLACK BOX ?`` 
 
 ___________________________________________________________________________________________________________________
-####  INSTALLING THE FIRST MACHINE - FHC2 / KUZAI NODE
+####  ``INSTALLING THE FIRST MACHINE - FHC2 / KUZAI NODE``
 
 The first node of the LLM Duo project was installed and prepared as a dedicated local inference machine for THE KUZ NETWORK lab. 
 The goal of this phase was not only to get a model running, but to turn the machine into a clean, reproducible, headless Linux node ready to host 
 a local open-source LLM and later integrate into a two-node orchestration workflow.
 
 ___________________________________________________________________________________________________________________
-#### 1/ HARDWARE CHECK
+#### ``1/ HARDWARE CHECK``
 
 The machine used for this first node is FHC2, an Acer Nitro ANV15-52 running Ubuntu 24.04.4 LTS with kernel 6.17.0-19-generic.
 It is equipped with an Intel Core i9-13900H, 32 GiB of RAM, and an NVIDIA RTX 5060 Laptop GPU. 
@@ -20,7 +20,8 @@ Storage is provided by a 1 TB Kingston NVMe drive, with the system currently ins
 hostnamectl
 cat /etc/os-release
 uname -a
-
+```
+```
 echo "===== CPU ====="
 lscpu | egrep 'Model name|Socket|Thread|Core|CPU\(s\)'
 
@@ -56,7 +57,7 @@ blkid /dev/nvme0n1p2 /dev/nvme0n1p3 /dev/nvme0n1p4
 ```
 
 ___________________________________________________________________________________________________________________
-#### 2/ SYSTEM CLEANUP
+#### ``2/ SYSTEM CLEANUP``
 
 The initial Ubuntu Desktop installation was converted into a server-style node. 
 The graphical stack was disabled by switching the default target to multi-user.target, and the machine was kept reachable over SSH and Wi-Fi through NetworkManager. 
@@ -66,13 +67,15 @@ The purpose of this step was to remove the desktop overhead and keep only the co
 systemctl set-default multi-user.target
 systemctl disable gdm3.service
 reboot
-
+```
+```
 systemctl get-default
 systemctl is-enabled gdm3 || true
 nmcli general status
 ip -br a
 nvidia-smi
-
+```
+```
 apt-mark manual \
   openssh-server \
   network-manager \
@@ -82,7 +85,8 @@ apt-mark manual \
   nvidia-utils-580 \
   nvidia-compute-utils-580 \
   linux-modules-nvidia-580-open-generic-hwe-24.04
-
+```
+```
 apt -s purge \
   ubuntu-desktop-minimal \
   gdm3 \
@@ -113,7 +117,8 @@ apt -s purge \
   xserver-xorg-video-vmware
 
 apt -s autoremove --purge
-
+```
+```
 dpkg -l | egrep 'ubuntu-desktop|gnome-shell|gdm3|xorg|xwayland' || true
 systemctl get-default
 nmcli general status
@@ -122,7 +127,7 @@ nvidia-smi
 ```
 
 ___________________________________________________________________________________________________________________
-#### 3/ HEADLESS HARDENING
+#### ``3/ HEADLESS HARDENING``
 
 Because this first node is a laptop-based machine, additional hardening was applied to avoid unwanted power-management behavior. 
 Lid switch actions were disabled, idle-triggered actions were disabled, and sleep, suspend, hibernate, and hybrid-sleep targets were masked. 
@@ -130,7 +135,8 @@ The node was therefore turned into a more stable headless lab system suitable fo
 
 ```
 mkdir -p /etc/systemd/logind.conf.d
-
+```
+```
 cat > /etc/systemd/logind.conf.d/headless.conf <<'EOF'
 [Login]
 HandleLidSwitch=ignore
@@ -138,10 +144,12 @@ HandleLidSwitchExternalPower=ignore
 HandleLidSwitchDocked=ignore
 IdleAction=ignore
 EOF
-
+```
+```
 systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 systemctl restart systemd-logind
-
+```
+```
 snap list
 
 snap remove firefox || true
@@ -150,7 +158,8 @@ snap remove firmware-updater || true
 snap remove gnome-42-2204 || true
 snap remove gtk-common-themes || true
 snap remove snapd-desktop-integration || true
-
+```
+```
 apt purge -y \
   xorg-docs-core \
   nvidia-settings \
@@ -158,7 +167,8 @@ apt purge -y \
 
 apt autoremove --purge -y
 apt clean
-
+```
+```
 apt purge -y \
   gnome-bluetooth-3-common \
   gnome-bluetooth-sendto \
@@ -181,10 +191,12 @@ apt purge -y \
   pinentry-gnome3 \
   xdg-desktop-portal-gnome \
   snapd
-
+```
+```
 apt autoremove --purge -y
 apt clean
-
+```
+```
 snap list || true
 dpkg -l | egrep 'gnome|snapd|xorg|gdm' || true
 nmcli general status
@@ -193,7 +205,7 @@ nvidia-smi
 ```
 
 ___________________________________________________________________________________________________________________
-#### 4/ LLM NODE PREPARATION
+#### ``4/ LLM NODE PREPARATION``
 
 The machine was prepared with the NVIDIA 580 open driver stack, which successfully loaded on the RTX 5060 Laptop GPU. 
 After that, the CUDA 13.2 toolkit was installed and validated with nvcc, confirming that the system was ready for CUDA-based compilation and inference workloads. 
@@ -217,35 +229,40 @@ apt install -y \
   python3-venv \
   python3-pip \
   pciutils
-
+```
+```
 mkdir -p /opt/llm
 mkdir -p /opt/src
 mkdir -p /var/log/llm-duo
-
+```
+```
 apt-mark hold \
   nvidia-driver-580-open \
   nvidia-utils-580 \
   nvidia-compute-utils-580 \
   linux-modules-nvidia-580-open-generic-hwe-24.04
-
+```
+```
 wget -O /usr/share/keyrings/cuda-ubuntu2404-keyring.gpg \
   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404-keyring.gpg
 
 wget -O /etc/apt/preferences.d/cuda-repository-pin-600 \
   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin
-
+```
+```
 cat > /etc/apt/sources.list.d/cuda-ubuntu2404.sources <<'EOF'
 Types: deb
 URIs: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/
 Suites: /
 Signed-By: /usr/share/keyrings/cuda-ubuntu2404-keyring.gpg
 EOF
-
+```
+```
 apt update
 apt-cache policy cuda-toolkit-13-2
-
 apt install -y cuda-toolkit-13-2
-
+```
+```
 cat > /etc/profile.d/cuda.sh <<'EOF'
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
@@ -253,7 +270,8 @@ EOF
 
 chmod 644 /etc/profile.d/cuda.sh
 source /etc/profile.d/cuda.sh
-
+```
+```
 which nvcc
 nvcc --version
 ls -ld /usr/local/cuda /usr/local/cuda-13.2
@@ -281,7 +299,7 @@ ldd build/bin/llama-cli | egrep 'cuda|cublas|cudart|stdc\+\+|libm|libpthread' ||
 ```
 
 ___________________________________________________________________________________________________________________
-#### 6/ FIRST CLI TEST / LOADING MODEL = GEMMA-3-1B-IT-GGUF:Q4_K_M
+#### ``6/ FIRST CLI TEST / LOADING MODEL = GEMMA-3-1B-IT-GGUF:Q4_K_M``
 
 An initial validation was performed with Gemma 3 1B IT in GGUF format to confirm that the CUDA build and local inference path were functional. 
 After successful CLI and API tests, the node was then reworked to better match the project goals by replacing the Google model with a fully open-source alternative.
@@ -292,7 +310,7 @@ cd /opt/src/llama.cpp
 nvidia-smi
 ```
 
-#### START LLAMA-SERVER
+#### ``START LLAMA-SERVER``
 
 ```
 ./build/bin/llama-server \
@@ -301,13 +319,13 @@ nvidia-smi
   --port 8080
 ```
 
-#### API TEST
+#### ``API TEST``
 
 ```
 ss -ltnp | grep 8080
-
 curl -s http://127.0.0.1:8080/v1/models | jq
-
+```
+```
 curl -s http://127.0.0.1:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -318,7 +336,7 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
 ```
 
 ___________________________________________________________________________________________________________________
-#### 7/ OPEN-SOURCE MODEL CONFIGURATION
+#### ``7/ OPEN-SOURCE MODEL CONFIGURATION``
 
 The final model retained for node A is Mistral-7B-Instruct-v0.3 Q4_K_M in GGUF format. 
 The model file was stored under /opt/llm/models, and the serving layer was configured around it. This choice is more consistent with the direction of the LLM Duo project, 
@@ -328,13 +346,15 @@ which aims to build a local, open-source, reproducible two-node setup rather tha
 systemctl disable --now llama-server-a.service 2>/dev/null || true
 rm -f /etc/systemd/system/llama-server-a.service
 systemctl daemon-reload
-
+```
+```
 rm -f /opt/llm/models/ggml-org_gemma-3-1b-it-GGUF_gemma-3-1b-it-Q4_K_M.gguf
 rm -f /root/.cache/llama.cpp/ggml-org_gemma-3-1b-it-GGUF_gemma-3-1b-it-Q4_K_M.gguf
 rm -f /root/.cache/llama.cpp/ggml-org_gemma-3-1b-it-GGUF_preset.ini
 rm -f /root/.cache/llama.cpp/ggml-org_gemma-3-1b-it-GGUF_gemma-3-1b-it-Q4_K_M.gguf.etag
 rm -f /root/.cache/llama.cpp/manifest=ggml-org=gemma-3-1b-it-GGUF=Q4_K_M.json
-
+```
+```
 mkdir -p /opt/llm/models
 mkdir -p /opt/llm/run
 mkdir -p /var/log/llm-duo
@@ -346,15 +366,18 @@ chown -R llm:llm /var/log/llm-duo
 
 ls -lh /root/.cache/llama.cpp
 ls -ld /opt/llm /opt/llm/models /var/log/llm-duo
-
+```
+```
 ./build/bin/llama-cli -hf bartowski/Mistral-7B-Instruct-v0.3-GGUF:Mistral-7B-Instruct-v0.3-Q4_K_M.gguf
 
 ls -lh /root/.cache/llama.cpp | grep 'Mistral-7B-Instruct-v0.3'
-
+```
+```
 cp -f /root/.cache/llama.cpp/bartowski_Mistral-7B-Instruct-v0.3-GGUF_Mistral-7B-Instruct-v0.3-Q4_K_M.gguf /opt/llm/models/
 chown llm:llm /opt/llm/models/bartowski_Mistral-7B-Instruct-v0.3-GGUF_Mistral-7B-Instruct-v0.3-Q4_K_M.gguf
 ls -lh /opt/llm/models
-
+```
+```
 cat > /etc/systemd/system/llama-server-a.service <<'EOF'
 [Unit]
 Description=llama.cpp server - Node A
@@ -383,13 +406,15 @@ ReadWritePaths=/opt/llm /var/log/llm-duo
 [Install]
 WantedBy=multi-user.target
 EOF
-
+```
+```
 systemctl daemon-reload
 systemctl enable --now llama-server-a.service
 
 systemctl status llama-server-a.service --no-pager -l
 ss -ltnp | grep 8080
-
+```
+```
 curl -s http://127.0.0.1:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -400,13 +425,14 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
 ```
 
 ___________________________________________________________________________________________________________________
-#### 8/ ORCHESTRATOR ENVIRONMENT PREPARATION
+#### ``8/ ORCHESTRATOR ENVIRONMENT PREPARATION``
 
 ```
 mkdir -p /opt/llm/orchestrator
 python3 -m venv /opt/llm/orchestrator/venv
 /opt/llm/orchestrator/venv/bin/pip install --upgrade pip requests
-
+```
+```
 cat > /opt/llm/orchestrator/test_node_a.py <<'EOF'
 #!/opt/llm/orchestrator/venv/bin/python3
 
@@ -442,13 +468,14 @@ def main() -> int:
 if __name__ == "__main__":
     raise SystemExit(main())
 EOF
-
+```
+```
 chmod 755 /opt/llm/orchestrator/test_node_a.py
 /opt/llm/orchestrator/test_node_a.py
 ```
 
 ___________________________________________________________________________________________________________________
-#### 9/ LOCAL ORCHESTRATOR VALIDATION
+#### ``9/ LOCAL ORCHESTRATOR VALIDATION``
 
 ```
 cat > /opt/llm/orchestrator/duo_loop_local.py <<'EOF'
@@ -669,14 +696,16 @@ def main() -> int:
 if __name__ == "__main__":
     raise SystemExit(main())
 EOF
-
+```
+```
 chmod 755 /opt/llm/orchestrator/duo_loop_local.py
-
+```
+```
 /opt/llm/orchestrator/duo_loop_local.py \
   --topic "Analyze the target architecture of the LLM Duo project and propose the first technical deployment choices." \
   --turns 6
 ```
 ___________________________________________________________________________________________________________________
 
-KUSANAGI8200 - THE KUZ NETWORK - @2026
+#### ``KUSANAGI8200 - THE KUZ NETWORK - @2026``
 
