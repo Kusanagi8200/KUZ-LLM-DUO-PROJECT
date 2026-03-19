@@ -3,13 +3,6 @@
 #### WHAT'S INSIDE THE BLACK BOX ?
 
 ___________________________________________________________________________________________________________________
-####  DISCUSSION BETWEEN LLM IZ ON
-
-    KUZAI-LLM: Hello, I'm KUZAI-LLM. I'm here to help with your questions and conversations. 
-
-    DARK-AI-LLM: Greetings, I'm DARK-AI-LLM, here to provide concise responses. My purpose is to assist with your queries efficiently. 
-
-___________________________________________________________________________________________________________________
 ####  INSTALLING THE SECOND MACHINE - FHC / DARK-AI NODE
 
 Deploying the second node, the llama.cpp server, the orchestrator, and the first dialogues between two local models.
@@ -199,18 +192,27 @@ apt install -y \
   python3-pip \
   pciutils
 
+````
+
+````
 apt-mark hold \
   nvidia-driver-575 \
   nvidia-utils-575 \
   nvidia-compute-utils-575 \
   nvidia-dkms-575
 
+````
+
+````
 wget -O /usr/share/keyrings/cuda-archive-keyring.gpg \
   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-archive-keyring.gpg
 
 wget -O /etc/apt/preferences.d/cuda-repository-pin-600 \
   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
 
+````
+
+````
 cat > /etc/apt/sources.list.d/cuda-ubuntu2204.list <<'EOF'
 deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /
 EOF
@@ -228,6 +230,7 @@ nvidia-smi
 ___________________________________________________________________________________________________________________
 4/ SIMULATION AND INSTALL CUDA TOOLKIT
 
+````
 apt install -y cuda-toolkit-12-9
 
 cat > /etc/profile.d/cuda.sh <<'EOF'
@@ -238,6 +241,9 @@ EOF
 chmod 644 /etc/profile.d/cuda.sh
 source /etc/profile.d/cuda.sh
 
+````
+
+````
 echo
 echo "===== CUDA TOOLKIT ====="
 which nvcc
@@ -270,6 +276,9 @@ echo "===== FORCE CUDA PATH ====="
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
+````
+
+````
 hash -r
 which nvcc || true
 /usr/local/cuda/bin/nvcc --version || true
@@ -284,9 +293,15 @@ export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 EOF
 
+````
+
+````
 chmod 644 /etc/profile.d/cuda.sh
 ln -sf /etc/profile.d/cuda.sh /etc/profile.d/zz-cuda.sh
 
+````
+
+````
 apt update
 apt install -y \
   build-essential \
@@ -304,6 +319,9 @@ apt install -y \
   python3-pip \
   pciutils
 
+````
+
+````
 mkdir -p /opt/src
 mkdir -p /opt/llm
 mkdir -p /var/log/llm-duo
@@ -317,10 +335,16 @@ cd /opt/src/llama.cpp
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
+````
+
+````
 cmake -S . -B build -G Ninja -DGGML_CUDA=ON
 
 cmake --build build --config Release -j"$(nproc)"
 
+````
+
+````
 echo
 echo "===== BINARIES ====="
 ls -1 build/bin | grep '^llama-' || true
@@ -338,6 +362,9 @@ cd /opt/src/llama.cpp
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
+````
+
+````
 ./build/bin/llama-cli -hf bartowski/granite-3.1-3b-a800m-instruct-GGUF:granite-3.1-3b-a800m-instruct-Q4_K_M.gguf
 
     Loading model... 
@@ -361,8 +388,11 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 > hello
 Hello! How can I assist you today? Let's chat about anything you'd like.
 [ Prompt: 307,4 t/s | Generation: 136,1 t/s ]
-7/ RUNING NODE 2 - DARK-AI LLM
+````
+___________________________________________________________________________________________________________________
+####  7/ RUNING NODE 2 - DARK-AI LLM
 
+````
 mkdir -p /opt/llm/models
 mkdir -p /opt/llm/run
 mkdir -p /var/log/llm-duo
@@ -377,6 +407,9 @@ chown -R llm:llm /opt/llm
 chown -R llm:llm /var/log/llm-duo
 ls -lh /opt/llm/models
 
+````
+
+````
 cat > /etc/systemd/system/llama-server-b.service <<'EOF'
 [Unit]
 
@@ -427,13 +460,18 @@ ReadWritePaths=/opt/llm /var/log/llm-duo
 WantedBy=multi-user.target
 
 EOF
+
 ````
+
 ````
 systemctl daemon-reload
 systemctl enable --now llama-server-b.service
 systemctl status llama-server-b.service --no-pager -l
 ss -ltnp | grep 8080
 
+````
+
+````
 curl -s http://127.0.0.1:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -448,6 +486,7 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
 ___________________________________________________________________________________________________________________
 ####  8/ CONNECTIVITY TEST FROM NODE 1 - KUZAI-LLM
 
+````
 curl -s http://10.39.46.126:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -458,6 +497,7 @@ curl -s http://10.39.46.126:8080/v1/chat/completions \
 
 "Yes, node B is reachable from node A." 
 
+````
 ````
 cat > /opt/llm/orchestrator/duo_loop_ab.py <<'EOF'
 
@@ -1231,16 +1271,16 @@ chmod 755 /opt/llm/orchestrator/duo_loop_ab.py
 
 ___________________________________________________________________________________________________________________
 TEST 01
-
+````
 /opt/llm/orchestrator/duo_loop_ab.py \
   --url-a http://127.0.0.1:8080/v1/chat/completions \
   --url-b http://10.39.46.126:8080/v1/chat/completions \
   --opening-prompt "Introduce yourself briefly, say your name, and say your purpose in this project. Use 2 very short sentences only. No technical details." \
   --turns 2
+````
+`KUZAI-LLM: Hello, I'm KUZAI-LLM. I'm here to help with your questions`
 
-KUZAI-LLM: Hello, I'm KUZAI-LLM. I'm here to help with your questions 
-
-DARK-AI-LLM: Greetings, I'm DARK-AI-LLM, here to provide concise responses. My purpose is to assist with your queries efficiently. 
+`DARK-AI-LLM: Greetings, I'm DARK-AI-LLM, here to provide concise responses. My purpose is to assist with your queries efficiently.`
 
 ___________________________________________________________________________________________________________________
 
