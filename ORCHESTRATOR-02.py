@@ -1,7 +1,5 @@
 #### ORCHESTRATOR-02
 
-$ = duo_loop_ab3.py
-
 #!/opt/llm/orchestrator/venv/bin/python3
 
 import argparse
@@ -353,7 +351,7 @@ def main() -> int:
             incoming_text=last_message,
             history=history,
             turn_number=turn,
-            max_lines_hint=args.max-lines if False else args.max_lines,
+            max_lines_hint=args.max_lines,
             max_sentences=args.max_sentences,
             history_depth=args.history_depth,
             opening_from_a=args.opening_from_a,
