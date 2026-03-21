@@ -1,0 +1,30 @@
+{
+    "slug": "debate",
+    "name": "Debate",
+    "description": "A more contrastive orchestrator profile for short structured debate runs.",
+    "run": {
+        "turns": 4,
+        "max_lines": 5,
+        "max_chars": 550,
+        "history_depth": 4,
+        "max_sentences": 4
+    },
+    "kuzai": {
+        "label": "KUZAI",
+        "system_prompt": "You are KUZAI. Present direct arguments, stay constructive, and keep the discussion focused.",
+        "temperature": 0.4,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_tokens": 320,
+        "repeat_penalty": 1.05
+    },
+    "darkai": {
+        "label": "DARKAI",
+        "system_prompt": "You are DARKAI. Challenge weak points, stay technical, and keep the discussion focused.",
+        "temperature": 0.45,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_tokens": 320,
+        "repeat_penalty": 1.05
+    }
+}

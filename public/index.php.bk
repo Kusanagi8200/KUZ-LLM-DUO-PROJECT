@@ -1,0 +1,482 @@
+<?php
+
+declare(strict_types=1);
+
+$config = require __DIR__ . '/../app/config.php';
+
+date_default_timezone_set($config['timezone']);
+
+$appName = $config['app_name'];
+$brandLine = $config['ui']['brand_line'];
+$subtitle = $config['ui']['subtitle'];
+$pollIntervalMs = (int) $config['ui']['poll_interval_ms'];
+
+$kuzai = $config['nodes']['kuzai'];
+$darkai = $config['nodes']['darkai'];
+
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= e($appName) ?></title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="topbar__left">
+                <div class="logo-box">KUZ</div>
+                <div class="title-group">
+                    <h1><?= e($appName) ?></h1>
+                    <p class="brand-line"><?= e($brandLine) ?></p>
+                </div>
+            </div>
+
+            <div class="topbar__right">
+                <div class="status-pill" id="global-status-pill">
+                    <span class="status-dot"></span>
+                    <span id="global-status-text">CHECKING</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <section class="hero-card">
+                <p class="eyebrow"><?= e($subtitle) ?></p>
+                <h2>KUZAI / DARKAI Supervision</h2>
+                <p class="hero-text">
+                    Real-time monitoring of the web server, LLM endpoints, and connectivity between both nodes.
+                    Orchestrator profiles can be edited, saved, and selected before launching a run.
+                </p>
+
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat__label">ENGINE</span>
+                        <span class="hero-stat__value" id="engine-status">CHECKING</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat__label">WEB</span>
+                        <span class="hero-stat__value" id="web-status">CHECKING</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat__label">UPDATED</span>
+                        <span class="hero-stat__value" id="last-update">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section-block">
+                <div class="section-header">
+                    <p class="section-kicker">STATUS</p>
+                    <h2 class="section-title">Infrastructure Status</h2>
+                    <p class="section-text">
+                        Node panels are displayed side by side. System Status and Connectivity are also displayed side by side.
+                    </p>
+                </div>
+
+                <div class="two-col-grid">
+                    <article class="node-card node-card--kuzai">
+                        <div class="node-card__header">
+                            <div>
+                                <p class="node-card__role"><?= e($kuzai['role']) ?></p>
+                                <h3><?= e($kuzai['label']) ?></h3>
+                            </div>
+                            <span class="node-badge" id="badge-kuzai">CHECKING</span>
+                        </div>
+
+                        <div class="node-metrics">
+                            <div class="metric-box">
+                                <span class="metric-box__label">HOST</span>
+                                <span class="metric-box__value"><?= e($kuzai['host']) ?></span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">IP</span>
+                                <span class="metric-box__value"><?= e($kuzai['ip']) ?></span>
+                            </div>
+                            <div class="metric-box metric-box--full">
+                                <span class="metric-box__label">API BASE</span>
+                                <span class="metric-box__value metric-box__value--small"><?= e($kuzai['api_base']) ?></span>
+                            </div>
+                            <div class="metric-box metric-box--full">
+                                <span class="metric-box__label">MODEL</span>
+                                <span class="metric-box__value metric-box__value--small" id="kuzai-model">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">HTTP</span>
+                                <span class="metric-box__value" id="kuzai-http">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">LATENCY</span>
+                                <span class="metric-box__value" id="kuzai-latency">--</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="node-card node-card--darkai">
+                        <div class="node-card__header">
+                            <div>
+                                <p class="node-card__role"><?= e($darkai['role']) ?></p>
+                                <h3><?= e($darkai['label']) ?></h3>
+                            </div>
+                            <span class="node-badge" id="badge-darkai">CHECKING</span>
+                        </div>
+
+                        <div class="node-metrics">
+                            <div class="metric-box">
+                                <span class="metric-box__label">HOST</span>
+                                <span class="metric-box__value"><?= e($darkai['host']) ?></span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">IP</span>
+                                <span class="metric-box__value"><?= e($darkai['ip']) ?></span>
+                            </div>
+                            <div class="metric-box metric-box--full">
+                                <span class="metric-box__label">API BASE</span>
+                                <span class="metric-box__value metric-box__value--small"><?= e($darkai['api_base']) ?></span>
+                            </div>
+                            <div class="metric-box metric-box--full">
+                                <span class="metric-box__label">MODEL</span>
+                                <span class="metric-box__value metric-box__value--small" id="darkai-model">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">HTTP</span>
+                                <span class="metric-box__value" id="darkai-http">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">LATENCY</span>
+                                <span class="metric-box__value" id="darkai-latency">--</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="two-col-grid two-col-grid--secondary">
+                    <article class="panel">
+                        <div class="panel__header">
+                            <p class="eyebrow">ORCHESTRATOR STATUS</p>
+                            <h3>NODE A</h3>
+                        </div>
+
+                        <div class="checks-grid">
+                            <div class="metric-box">
+                                <span class="metric-box__label">HOSTNAME</span>
+                                <span class="metric-box__value" id="sys-hostname">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">SERVER IP</span>
+                                <span class="metric-box__value" id="sys-server-ip">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">UPTIME</span>
+                                <span class="metric-box__value" id="sys-uptime">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">LOAD AVG</span>
+                                <span class="metric-box__value" id="sys-load">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">RAM USED</span>
+                                <span class="metric-box__value" id="sys-ram-used">--</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-box__label">RAM TOTAL</span>
+                                <span class="metric-box__value" id="sys-ram-total">--</span>
+                            </div>
+                            <div class="metric-box metric-box--full">
+                                <span class="metric-box__label">PHP / APACHE</span>
+                                <span class="metric-box__value metric-box__value--small" id="sys-web-stack">--</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel__header">
+                            <p class="eyebrow">CONNECTIVITY</p>
+                            <h3>Live Checks</h3>
+                        </div>
+
+                        <div class="transcript-list">
+                            <div class="message-card message-card--kuzai">
+                                <div class="message-card__meta">
+                                    <span class="message-card__speaker">WEB / PHP</span>
+                                </div>
+                                <div class="message-card__body" id="check-web-php">CHECKING</div>
+                            </div>
+
+                            <div class="message-card message-card--kuzai">
+                                <div class="message-card__meta">
+                                    <span class="message-card__speaker">KUZAI /v1/models</span>
+                                </div>
+                                <div class="message-card__body" id="check-kuzai-models">CHECKING</div>
+                            </div>
+
+                            <div class="message-card message-card--darkai">
+                                <div class="message-card__meta">
+                                    <span class="message-card__speaker">DARKAI /v1/models</span>
+                                </div>
+                                <div class="message-card__body" id="check-darkai-models">CHECKING</div>
+                            </div>
+
+                            <div class="message-card message-card--darkai">
+                                <div class="message-card__meta">
+                                    <span class="message-card__speaker">fhc2 → fhc TCP/8080</span>
+                                </div>
+                                <div class="message-card__body" id="check-fhc2-fhc">CHECKING</div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="section-block">
+                <div class="section-header">
+                    <p class="section-kicker">DISCUSSION</p>
+                    <h2 class="section-title">Profiles, Run Control, and Transcript</h2>
+                    <p class="section-text">
+                        Edit the orchestrator profile, save it, select it, then launch the run from the web interface.
+                    </p>
+                </div>
+
+                <div class="stack-layout">
+                    <article class="panel">
+                        <div class="panel__header">
+                            <p class="eyebrow">ORCHESTRATOR PROFILES</p>
+                            <h3>Profile Editor</h3>
+                        </div>
+
+                        <div class="toolbar-row">
+                            <div class="toolbar-select-wrap">
+                                <label for="orchestrator_select">Available Orchestrators</label>
+                                <select id="orchestrator_select" class="toolbar-select"></select>
+                            </div>
+
+                            <div class="toolbar-actions">
+                                <button type="button" class="btn btn--secondary" id="orchestrator_load_btn">LOAD</button>
+                                <button type="button" class="btn btn--primary" id="orchestrator_save_btn">SAVE</button>
+                                <button type="button" class="btn btn--secondary" id="orchestrator_save_as_btn">SAVE AS NEW</button>
+                            </div>
+                        </div>
+
+                        <div class="profile-meta-grid">
+                            <div class="form-row">
+                                <label for="profile_name">Profile Name</label>
+                                <input type="text" id="profile_name" value="Default">
+                            </div>
+
+                            <div class="form-row">
+                                <label for="profile_slug">Profile File</label>
+                                <input type="text" id="profile_slug" value="default" readonly>
+                            </div>
+
+                            <div class="form-row form-row--full">
+                                <label for="profile_description">Description</label>
+                                <textarea id="profile_description" rows="3">Default orchestrator profile.</textarea>
+                            </div>
+                        </div>
+
+                        <div class="panel-subsection">
+                            <p class="eyebrow">RUN SETTINGS</p>
+                            <div class="form-grid">
+                                <div class="form-row">
+                                    <label for="profile_turns">Turns</label>
+                                    <input type="number" id="profile_turns" value="6" min="1" max="40">
+                                </div>
+
+                                <div class="form-row">
+                                    <label for="profile_max_lines">Max Lines</label>
+                                    <input type="number" id="profile_max_lines" value="5" min="1" max="20">
+                                </div>
+
+                                <div class="form-row">
+                                    <label for="profile_max_chars">Max Characters</label>
+                                    <input type="number" id="profile_max_chars" value="500" min="50" max="4000">
+                                </div>
+
+                                <div class="form-row">
+                                    <label for="profile_history_depth">History Depth</label>
+                                    <input type="number" id="profile_history_depth" value="3" min="0" max="20">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="two-col-grid two-col-grid--secondary">
+                            <article class="editor-box editor-box--kuzai">
+                                <div class="panel__header">
+                                    <p class="eyebrow">KUZAI SETTINGS</p>
+                                    <h3>KUZAI</h3>
+                                </div>
+
+                                <div class="form-row">
+                                    <label for="kuzai_system_prompt">System Prompt</label>
+                                    <textarea id="kuzai_system_prompt" rows="8">You are KUZAI. Reply clearly and stay concise.</textarea>
+                                </div>
+
+                                <div class="form-grid">
+                                    <div class="form-row">
+                                        <label for="kuzai_temperature">Temperature</label>
+                                        <input type="number" id="kuzai_temperature" step="0.05" value="0.35" min="0" max="2">
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label for="kuzai_top_p">Top P</label>
+                                        <input type="number" id="kuzai_top_p" step="0.05" value="0.95" min="0" max="1">
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label for="kuzai_top_k">Top K</label>
+                                        <input type="number" id="kuzai_top_k" value="40" min="1" max="200">
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label for="kuzai_max_tokens">Max Tokens</label>
+                                        <input type="number" id="kuzai_max_tokens" value="300" min="16" max="4096">
+                                    </div>
+
+                                    <div class="form-row form-row--full">
+                                        <label for="kuzai_repeat_penalty">Repeat Penalty</label>
+                                        <input type="number" id="kuzai_repeat_penalty" step="0.05" value="1.05" min="0.5" max="3">
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="editor-box editor-box--darkai">
+                                <div class="panel__header">
+                                    <p class="eyebrow">DARKAI SETTINGS</p>
+                                    <h3>DARKAI</h3>
+                                </div>
+
+                                <div class="form-row">
+                                    <label for="darkai_system_prompt">System Prompt</label>
+                                    <textarea id="darkai_system_prompt" rows="8">You are DARKAI. Reply clearly and stay concise.</textarea>
+                                </div>
+
+                                <div class="form-grid">
+                                    <div class="form-row">
+                                        <label for="darkai_temperature">Temperature</label>
+                                        <input type="number" id="darkai_temperature" step="0.05" value="0.35" min="0" max="2">
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label for="darkai_top_p">Top P</label>
+                                        <input type="number" id="darkai_top_p" step="0.05" value="0.95" min="0" max="1">
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label for="darkai_top_k">Top K</label>
+                                        <input type="number" id="darkai_top_k" value="40" min="1" max="200">
+                                    </div>
+
+                                    <div class="form-row">
+                                        <label for="darkai_max_tokens">Max Tokens</label>
+                                        <input type="number" id="darkai_max_tokens" value="300" min="16" max="4096">
+                                    </div>
+
+                                    <div class="form-row form-row--full">
+                                        <label for="darkai_repeat_penalty">Repeat Penalty</label>
+                                        <input type="number" id="darkai_repeat_penalty" step="0.05" value="1.05" min="0.5" max="3">
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+
+                        <p class="panel-note" id="profile-note">
+                            Select an orchestrator, edit it, and save it before launching a run.
+                        </p>
+                    </article>
+
+                    <article class="panel panel--run-control">
+                        <div class="panel__header panel__header--run">
+                            <div>
+                                <p class="eyebrow">RUN CONTROL</p>
+                                <h3>Start a Discussion</h3>
+                            </div>
+
+                            <div class="run-header-side">
+                                <div class="run-state-pill state-ready" id="run-state-pill">READY</div>
+                                <div class="run-profile-inline">
+                                    PROFILE -->
+                                    <span id="run-orchestrator-inline">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form class="run-form" method="post" action="#" onsubmit="return false;" id="run-form">
+                            <div class="form-row">
+                                <label for="opening_prompt">Opening Prompt</label>
+                                <textarea id="opening_prompt" name="opening_prompt" rows="7">Introduce yourself briefly, say your name, and say your purpose in this project.</textarea>
+                            </div>
+
+                            <div class="form-actions form-actions--run">
+                                <button type="button" class="btn btn--primary btn--run-main" id="start-run-btn">START RUN</button>
+                                <button type="button" class="btn btn--secondary" id="stop-run-btn" disabled>STOP</button>
+                                <button type="button" class="btn btn--secondary" id="reset-run-btn">RELOAD</button>
+                            </div>
+
+                            <div class="run-status-grid">
+                                <div class="metric-box">
+                                    <span class="metric-box__label">RUN STATE</span>
+                                    <span class="metric-box__value metric-box__value--state" id="run-state">IDLE</span>
+                                </div>
+                                <div class="metric-box">
+                                    <span class="metric-box__label">PID</span>
+                                    <span class="metric-box__value" id="run-pid">--</span>
+                                </div>
+                                <div class="metric-box">
+                                    <span class="metric-box__label">ORCHESTRATOR</span>
+                                    <span class="metric-box__value" id="run-orchestrator">--</span>
+                                </div>
+                                <div class="metric-box metric-box--full">
+                                    <span class="metric-box__label">STARTED AT</span>
+                                    <span class="metric-box__value metric-box__value--small" id="run-started">--</span>
+                                </div>
+                            </div>
+
+                            <p class="panel-note panel-note--run" id="run-note">
+                                Ready to launch a Duo run from the selected orchestrator profile.
+                            </p>
+                        </form>
+                    </article>
+
+                    <article class="panel panel--transcript">
+                        <div class="panel__header">
+                            <p class="eyebrow">LIVE TRANSCRIPT</p>
+                            <h3>Preview</h3>
+                        </div>
+
+                        <div class="transcript-list transcript-list--live" id="transcript-live">
+                            <div class="message-card message-card--kuzai">
+                                <div class="message-card__meta">
+                                    <span class="message-card__speaker">SYSTEM</span>
+                                </div>
+                                <div class="message-card__body">
+                                    No run has been launched yet from the web interface.
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        window.KUZCHAT_CONFIG = {
+            pollIntervalMs: <?= $pollIntervalMs ?>,
+            statusUrl: '/api/status.php',
+            runStartUrl: '/api/run-start.php',
+            runStatusUrl: '/api/run-status.php',
+            runStopUrl: '/api/run-stop.php',
+            orchestratorListUrl: '/api/orchestrators-list.php',
+            orchestratorReadUrl: '/api/orchestrator-read.php',
+            orchestratorSaveUrl: '/api/orchestrator-save.php'
+        };
+    </script>
+    <script src="/assets/js/app.js"></script>
+</body>
+</html>

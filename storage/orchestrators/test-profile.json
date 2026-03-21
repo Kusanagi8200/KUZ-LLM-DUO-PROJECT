@@ -1,0 +1,30 @@
+{
+    "slug": "test-profile",
+    "name": "Test Profile",
+    "description": "Test profile created from API",
+    "run": {
+        "turns": 4,
+        "max_lines": 5,
+        "max_chars": 500,
+        "history_depth": 3,
+        "max_sentences": 4
+    },
+    "kuzai": {
+        "label": "KUZAI",
+        "system_prompt": "You are KUZAI. Reply clearly and briefly.",
+        "temperature": 0.35,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_tokens": 300,
+        "repeat_penalty": 1.05
+    },
+    "darkai": {
+        "label": "DARKAI",
+        "system_prompt": "You are DARKAI. Reply clearly and briefly.",
+        "temperature": 0.35,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_tokens": 300,
+        "repeat_penalty": 1.05
+    }
+}

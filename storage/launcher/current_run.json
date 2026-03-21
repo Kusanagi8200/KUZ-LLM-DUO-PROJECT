@@ -1,0 +1,13 @@
+{
+    "pid": 13677,
+    "status": "completed",
+    "started_at": "2026-03-21 18:56:07",
+    "opening_prompt": "How do you fell now ?",
+    "orchestrator_name": "debate",
+    "profile_file": "/var/www/html/KUZCHAT-LLM-DUO/storage/orchestrators/debate.json",
+    "stdout_file": "/var/www/html/KUZCHAT-LLM-DUO/storage/launcher/run-20260321-185607.stdout.log",
+    "stderr_file": "/var/www/html/KUZCHAT-LLM-DUO/storage/launcher/run-20260321-185607.stderr.log",
+    "output_dir": "/var/www/html/KUZCHAT-LLM-DUO/storage/runs",
+    "completed_at": "2026-03-21 18:56:18",
+    "latest_run": "run-ab-20260321-185607"
+}

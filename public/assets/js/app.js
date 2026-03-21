@@ -1,0 +1,740 @@
+(function () {
+    "use strict";
+
+    const cfg = window.KUZCHAT_CONFIG || {
+        pollIntervalMs: 5000,
+        statusUrl: "/api/status.php",
+        runStartUrl: "/api/run-start.php",
+        runStatusUrl: "/api/run-status.php",
+        runStopUrl: "/api/run-stop.php",
+        orchestratorListUrl: "/api/orchestrators-list.php",
+        orchestratorReadUrl: "/api/orchestrator-read.php",
+        orchestratorSaveUrl: "/api/orchestrator-save.php"
+    };
+
+    let currentOrchestratorSlug = null;
+    let runInterfaceReset = false;
+
+    function byId(id) {
+        return document.getElementById(id);
+    }
+
+    function setText(id, value) {
+        const el = byId(id);
+        if (!el) {
+            return;
+        }
+        el.textContent = value;
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function setBadge(id, ok) {
+        const el = byId(id);
+        if (!el) {
+            return;
+        }
+
+        el.textContent = ok ? "ONLINE" : "OFFLINE";
+        el.classList.remove("node-badge--ok", "node-badge--down");
+        el.classList.add(ok ? "node-badge--ok" : "node-badge--down");
+    }
+
+    function setGlobalStatus(allOk) {
+        const text = byId("global-status-text");
+        const pill = byId("global-status-pill");
+
+        if (!text || !pill) {
+            return;
+        }
+
+        text.textContent = allOk ? "READY" : "DEGRADED";
+        pill.classList.remove("status-pill--ok", "status-pill--down");
+        pill.classList.add(allOk ? "status-pill--ok" : "status-pill--down");
+    }
+
+    function boolLabel(value, okText = "OK", koText = "FAIL") {
+        return value ? okText : koText;
+    }
+
+    function formatLatency(value) {
+        if (value === null || value === undefined || value === "") {
+            return "--";
+        }
+        return `${value} ms`;
+    }
+
+    function formatHttp(value) {
+        if (value === null || value === undefined || value === "") {
+            return "--";
+        }
+        return String(value);
+    }
+
+    function formatRam(usedMb, totalMb, usedPercent) {
+        if (
+            usedMb === null || usedMb === undefined ||
+            totalMb === null || totalMb === undefined ||
+            usedPercent === null || usedPercent === undefined
+        ) {
+            return { used: "--", total: "--" };
+        }
+
+        return {
+            used: `${usedMb} MB (${usedPercent}%)`,
+            total: `${totalMb} MB`
+        };
+    }
+
+    function setProfileNote(message) {
+        setText("profile-note", message);
+    }
+
+    function setRunNote(message) {
+        setText("run-note", message);
+    }
+
+    function readNumber(id, fallback) {
+        const el = byId(id);
+        if (!el) {
+            return fallback;
+        }
+
+        const value = Number(el.value);
+        return Number.isFinite(value) ? value : fallback;
+    }
+
+    function readString(id, fallback = "") {
+        const el = byId(id);
+        if (!el) {
+            return fallback;
+        }
+
+        return String(el.value ?? fallback);
+    }
+
+    function applyRunState(state, labelOverride = null) {
+        const stateText = byId("run-state");
+        const statePill = byId("run-state-pill");
+
+        if (!stateText || !statePill) {
+            return;
+        }
+
+        const normalized = String(state || "idle").toLowerCase();
+
+        const labels = {
+            ready: "READY",
+            idle: "IDLE",
+            running: "RUNNING",
+            completed: "COMPLETED",
+            stopped: "STOPPED",
+            error: "ERROR",
+            starting: "STARTING",
+            stopping: "STOPPING",
+            reset: "READY FOR NEW RUN",
+            finished: "FINISHED",
+            failed: "FAILED"
+        };
+
+        const cssClass = {
+            ready: "state-ready",
+            idle: "state-idle",
+            running: "state-running",
+            completed: "state-completed",
+            stopped: "state-stopped",
+            error: "state-error",
+            starting: "state-running",
+            stopping: "state-stopped",
+            reset: "state-ready",
+            finished: "state-completed",
+            failed: "state-error"
+        };
+
+        const finalLabel = labelOverride || labels[normalized] || normalized.toUpperCase();
+        stateText.textContent = finalLabel;
+        statePill.textContent = finalLabel;
+
+        statePill.className = "run-state-pill";
+        statePill.classList.add(cssClass[normalized] || "state-idle");
+    }
+
+    function syncSelectedOrchestratorDisplay(value) {
+        const finalValue = value || currentOrchestratorSlug || "--";
+        setText("run-orchestrator", finalValue);
+        setText("run-orchestrator-inline", finalValue);
+    }
+
+    function renderSystemTranscript(message) {
+        const container = byId("transcript-live");
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="message-card message-card--kuzai">
+                <div class="message-card__meta">
+                    <span class="message-card__speaker">SYSTEM</span>
+                </div>
+                <div class="message-card__body">${escapeHtml(message)}</div>
+            </div>
+        `;
+    }
+
+    function resetRunInterface() {
+        runInterfaceReset = true;
+        updateRunButtons(false, false, false);
+
+        const selectedSlug = byId("orchestrator_select")?.value || currentOrchestratorSlug || "--";
+
+        applyRunState("reset");
+        setText("run-pid", "--");
+        setText("run-started", "--");
+        syncSelectedOrchestratorDisplay(selectedSlug);
+        setRunNote("Interface reset. Ready for a new run.");
+        renderSystemTranscript("Interface reset. Ready for a new run.");
+    }
+
+    function fillProfileForm(profile) {
+        currentOrchestratorSlug = profile.slug || null;
+
+        const select = byId("orchestrator_select");
+        if (select && profile.slug) {
+            select.value = profile.slug;
+        }
+
+        byId("profile_name").value = profile.name || profile.slug || "";
+        byId("profile_slug").value = profile.slug || "";
+        byId("profile_description").value = profile.description || "";
+
+        byId("profile_turns").value = profile.run?.turns ?? 6;
+        byId("profile_max_lines").value = profile.run?.max_lines ?? 5;
+        byId("profile_max_chars").value = profile.run?.max_chars ?? 500;
+        byId("profile_history_depth").value = profile.run?.history_depth ?? 3;
+
+        byId("kuzai_system_prompt").value = profile.kuzai?.system_prompt ?? "";
+        byId("kuzai_temperature").value = profile.kuzai?.temperature ?? 0.35;
+        byId("kuzai_top_p").value = profile.kuzai?.top_p ?? 0.95;
+        byId("kuzai_top_k").value = profile.kuzai?.top_k ?? 40;
+        byId("kuzai_max_tokens").value = profile.kuzai?.max_tokens ?? 300;
+        byId("kuzai_repeat_penalty").value = profile.kuzai?.repeat_penalty ?? 1.05;
+
+        byId("darkai_system_prompt").value = profile.darkai?.system_prompt ?? "";
+        byId("darkai_temperature").value = profile.darkai?.temperature ?? 0.35;
+        byId("darkai_top_p").value = profile.darkai?.top_p ?? 0.95;
+        byId("darkai_top_k").value = profile.darkai?.top_k ?? 40;
+        byId("darkai_max_tokens").value = profile.darkai?.max_tokens ?? 300;
+        byId("darkai_repeat_penalty").value = profile.darkai?.repeat_penalty ?? 1.05;
+
+        if (runInterfaceReset) {
+            syncSelectedOrchestratorDisplay(profile.slug || "--");
+        }
+    }
+
+    function buildProfilePayload() {
+        return {
+            slug: readString("profile_slug", "").trim(),
+            name: readString("profile_name", "Default").trim(),
+            description: readString("profile_description", "").trim(),
+            run: {
+                turns: readNumber("profile_turns", 6),
+                max_lines: readNumber("profile_max_lines", 5),
+                max_chars: readNumber("profile_max_chars", 500),
+                history_depth: readNumber("profile_history_depth", 3)
+            },
+            kuzai: {
+                label: "KUZAI",
+                system_prompt: readString("kuzai_system_prompt", "").trim(),
+                temperature: readNumber("kuzai_temperature", 0.35),
+                top_p: readNumber("kuzai_top_p", 0.95),
+                top_k: readNumber("kuzai_top_k", 40),
+                max_tokens: readNumber("kuzai_max_tokens", 300),
+                repeat_penalty: readNumber("kuzai_repeat_penalty", 1.05)
+            },
+            darkai: {
+                label: "DARKAI",
+                system_prompt: readString("darkai_system_prompt", "").trim(),
+                temperature: readNumber("darkai_temperature", 0.35),
+                top_p: readNumber("darkai_top_p", 0.95),
+                top_k: readNumber("darkai_top_k", 40),
+                max_tokens: readNumber("darkai_max_tokens", 300),
+                repeat_penalty: readNumber("darkai_repeat_penalty", 1.05)
+            }
+        };
+    }
+
+    async function loadOrchestratorList(preferredSlug = null) {
+        const response = await fetch(cfg.orchestratorListUrl, {
+            method: "GET",
+            headers: { "Accept": "application/json" },
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        const select = byId("orchestrator_select");
+
+        if (!select) {
+            return [];
+        }
+
+        select.innerHTML = "";
+
+        for (const item of items) {
+            const option = document.createElement("option");
+            option.value = item.slug;
+            option.textContent = `${item.name} (${item.slug})`;
+            select.appendChild(option);
+        }
+
+        const targetSlug = preferredSlug || currentOrchestratorSlug || (items[0] ? items[0].slug : "");
+        if (targetSlug) {
+            select.value = targetSlug;
+        }
+
+        return items;
+    }
+
+    async function loadOrchestrator(slug) {
+        const response = await fetch(`${cfg.orchestratorReadUrl}?name=${encodeURIComponent(slug)}`, {
+            method: "GET",
+            headers: { "Accept": "application/json" },
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.ok || !data.profile) {
+            throw new Error(data.error || "Unable to load orchestrator");
+        }
+
+        fillProfileForm(data.profile);
+        syncSelectedOrchestratorDisplay(data.profile.slug || "--");
+        setProfileNote(`Loaded orchestrator: ${data.profile.slug}`);
+        return data.profile;
+    }
+
+    async function saveOrchestrator(saveAsNew = false) {
+        const payload = buildProfilePayload();
+
+        let saveAsName = payload.slug || payload.name;
+        if (saveAsNew) {
+            const prompted = window.prompt("New orchestrator file name", saveAsName || "new-orchestrator");
+            if (prompted === null) {
+                return null;
+            }
+            saveAsName = prompted.trim();
+        }
+
+        if (!payload.name) {
+            throw new Error("Profile name is required.");
+        }
+
+        const response = await fetch(cfg.orchestratorSaveUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                save_as_name: saveAsName,
+                profile: payload
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            throw new Error(data.error || `HTTP ${response.status}`);
+        }
+
+        await loadOrchestratorList(data.slug);
+        fillProfileForm(data.profile);
+        syncSelectedOrchestratorDisplay(data.profile.slug || "--");
+        setProfileNote(`Saved orchestrator: ${data.slug}`);
+
+        return data.profile;
+    }
+
+    async function loadStatus() {
+        try {
+            const response = await fetch(cfg.statusUrl, {
+                method: "GET",
+                headers: { "Accept": "application/json" },
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            const kuzaiOk = Boolean(data.nodes && data.nodes.kuzai && data.nodes.kuzai.reachable);
+            const darkaiOk = Boolean(data.nodes && data.nodes.darkai && data.nodes.darkai.reachable);
+            const tcpOk = Boolean(data.checks && data.checks.fhc2_to_fhc_tcp_8080);
+            const webOk = Boolean(data.checks && data.checks.web_php);
+
+            setBadge("badge-kuzai", kuzaiOk);
+            setBadge("badge-darkai", darkaiOk);
+            setGlobalStatus(kuzaiOk && darkaiOk && tcpOk && webOk);
+
+            setText("engine-status", kuzaiOk && darkaiOk ? "DUO ENGINE REACHABLE" : "DUO ENGINE DEGRADED");
+            setText("web-status", webOk ? "PHP / APACHE OK" : "WEB CHECK FAILED");
+            setText("last-update", data.app?.timestamp || "--");
+
+            setText("kuzai-model", data.nodes?.kuzai?.model_name || "--");
+            setText("kuzai-http", formatHttp(data.nodes?.kuzai?.http_code));
+            setText("kuzai-latency", formatLatency(data.nodes?.kuzai?.latency_ms));
+
+            setText("darkai-model", data.nodes?.darkai?.model_name || "--");
+            setText("darkai-http", formatHttp(data.nodes?.darkai?.http_code));
+            setText("darkai-latency", formatLatency(data.nodes?.darkai?.latency_ms));
+
+            setText("sys-hostname", data.system?.hostname || "--");
+            setText("sys-server-ip", data.system?.server_ip || "--");
+            setText("sys-uptime", data.system?.uptime || "--");
+            setText("sys-load", data.system?.load_average || "--");
+
+            const ram = formatRam(
+                data.system?.memory?.used_mb,
+                data.system?.memory?.total_mb,
+                data.system?.memory?.used_percent
+            );
+
+            setText("sys-ram-used", ram.used);
+            setText("sys-ram-total", ram.total);
+
+            const phpVersion = data.app?.php_version || "--";
+            const apacheHint = data.app?.apache_hint || "--";
+            setText("sys-web-stack", `PHP ${phpVersion} / ${apacheHint}`);
+
+            setText("check-web-php", boolLabel(webOk, "OK", "FAIL"));
+            setText("check-kuzai-models", boolLabel(kuzaiOk, "OK", "FAIL"));
+            setText("check-darkai-models", boolLabel(darkaiOk, "OK", "FAIL"));
+            setText("check-fhc2-fhc", boolLabel(tcpOk, "OK", "FAIL"));
+        } catch (error) {
+            setGlobalStatus(false);
+            setText("engine-status", "STATUS FETCH ERROR");
+            setText("web-status", "STATUS FETCH ERROR");
+            setText("last-update", "--");
+            setText("check-web-php", `ERROR: ${error.message}`);
+            setText("check-kuzai-models", "UNKNOWN");
+            setText("check-darkai-models", "UNKNOWN");
+            setText("check-fhc2-fhc", "UNKNOWN");
+            setBadge("badge-kuzai", false);
+            setBadge("badge-darkai", false);
+        }
+    }
+
+    function renderTranscript(transcript, stdoutTail, status, note) {
+        const container = byId("transcript-live");
+        if (!container) {
+            return;
+        }
+
+        if (Array.isArray(transcript) && transcript.length > 0) {
+            container.innerHTML = transcript.map((item) => {
+                const speaker = String(item.speaker || "MODEL");
+                const bodyClass = speaker.toUpperCase() === "DARKAI" ? "darkai" : "kuzai";
+                const host = speaker.toUpperCase() === "DARKAI" ? "fhc" : "fhc2";
+                const time = item.timestamp ? escapeHtml(item.timestamp) : `turn ${escapeHtml(item.turn ?? "")}`;
+
+                return `
+                    <div class="message-card message-card--${bodyClass}">
+                        <div class="message-card__meta">
+                            <span class="message-card__speaker">${escapeHtml(speaker)}</span>
+                            <span class="message-card__host">${escapeHtml(host)}</span>
+                            <span class="message-card__time">${time}</span>
+                        </div>
+                        <div class="message-card__body">${escapeHtml(item.content || "").replaceAll("\n", "<br>")}</div>
+                    </div>
+                `;
+            }).join("");
+            return;
+        }
+
+        if (Array.isArray(stdoutTail) && stdoutTail.length > 0) {
+            container.innerHTML = `
+                <div class="message-card message-card--kuzai">
+                    <div class="message-card__meta">
+                        <span class="message-card__speaker">RUN LOG</span>
+                    </div>
+                    <div class="message-card__body">${escapeHtml(stdoutTail.join("\n")).replaceAll("\n", "<br>")}</div>
+                </div>
+            `;
+            return;
+        }
+
+        renderSystemTranscript(note || `Run status: ${status}`);
+    }
+
+    function updateRunButtons(isRunning, isStarting = false, isStopping = false) {
+        const startBtn = byId("start-run-btn");
+        const stopBtn = byId("stop-run-btn");
+        const resetBtn = byId("reset-run-btn");
+
+        if (startBtn) {
+            startBtn.disabled = isRunning || isStarting || isStopping;
+            if (isStarting) {
+                startBtn.textContent = "STARTING...";
+            } else if (isRunning) {
+                startBtn.textContent = "RUNNING...";
+            } else {
+                startBtn.textContent = "START RUN";
+            }
+        }
+
+        if (stopBtn) {
+            stopBtn.disabled = !isRunning || isStarting || isStopping;
+            stopBtn.textContent = isStopping ? "STOPPING..." : "STOP";
+        }
+
+        if (resetBtn) {
+            resetBtn.disabled = isRunning || isStarting || isStopping;
+            resetBtn.textContent = "RELOAD";
+        }
+    }
+
+    async function loadRunStatus() {
+        try {
+            const response = await fetch(cfg.runStatusUrl, {
+                method: "GET",
+                headers: { "Accept": "application/json" },
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            const isRunning = Boolean(data.is_running);
+
+            if (isRunning) {
+                runInterfaceReset = false;
+            }
+
+            if (!isRunning && runInterfaceReset) {
+                updateRunButtons(false, false, false);
+                applyRunState("reset");
+                setText("run-pid", "--");
+                setText("run-started", "--");
+                syncSelectedOrchestratorDisplay(byId("orchestrator_select")?.value || currentOrchestratorSlug || "--");
+                return;
+            }
+
+            updateRunButtons(isRunning, false, false);
+
+            applyRunState(data.status || "idle");
+            setText("run-pid", data.pid ? String(data.pid) : "--");
+            setText("run-started", data.active?.started_at || "--");
+            syncSelectedOrchestratorDisplay(data.active?.orchestrator_name || byId("orchestrator_select")?.value || "--");
+            setRunNote(data.note || "No run status available.");
+
+            renderTranscript(
+                data.transcript || [],
+                data.stdout_tail || [],
+                data.status || "idle",
+                data.note || ""
+            );
+        } catch (error) {
+            updateRunButtons(false, false, false);
+            applyRunState("error");
+            setText("run-pid", "--");
+            setText("run-started", "--");
+            syncSelectedOrchestratorDisplay("--");
+            setRunNote(`Run status error: ${error.message}`);
+            renderSystemTranscript(`Run status error: ${error.message}`);
+        }
+    }
+
+    async function startRun() {
+        const openingPrompt = byId("opening_prompt")?.value?.trim() || "";
+
+        if (!openingPrompt) {
+            setRunNote("Opening prompt is required.");
+            return;
+        }
+
+        runInterfaceReset = false;
+        updateRunButtons(false, true, false);
+        applyRunState("starting");
+        setRunNote("Saving orchestrator and starting run...");
+        renderSystemTranscript("Starting new run...");
+
+        try {
+            const savedProfile = await saveOrchestrator(false);
+            if (!savedProfile || !savedProfile.slug) {
+                throw new Error("Unable to save the selected orchestrator.");
+            }
+
+            const response = await fetch(cfg.runStartUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    opening_prompt: openingPrompt,
+                    orchestrator_name: savedProfile.slug
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data.error || `HTTP ${response.status}`);
+            }
+
+            syncSelectedOrchestratorDisplay(data.orchestrator_name || savedProfile.slug);
+            setRunNote(`Run started with orchestrator ${data.orchestrator_name}. PID ${data.pid}.`);
+            await loadRunStatus();
+        } catch (error) {
+            updateRunButtons(false, false, false);
+            applyRunState("error");
+            setRunNote(`Start failed: ${error.message}`);
+            renderSystemTranscript(`Start failed: ${error.message}`);
+        }
+    }
+
+    async function stopRun() {
+        updateRunButtons(true, false, true);
+        applyRunState("stopping");
+        setRunNote("Stopping run...");
+
+        try {
+            const response = await fetch(cfg.runStopUrl, {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data.error || `HTTP ${response.status}`);
+            }
+
+            setRunNote(data.message || "Run stopped.");
+            await loadRunStatus();
+        } catch (error) {
+            updateRunButtons(false, false, false);
+            applyRunState("error");
+            setRunNote(`Stop failed: ${error.message}`);
+        }
+    }
+
+    async function initOrchestrators() {
+        const items = await loadOrchestratorList();
+        if (items.length > 0) {
+            await loadOrchestrator(items[0].slug);
+            syncSelectedOrchestratorDisplay(items[0].slug);
+        } else {
+            setProfileNote("No orchestrator profile found. Save the current editor as a new profile.");
+        }
+    }
+
+    function initEvents() {
+        const loadBtn = byId("orchestrator_load_btn");
+        const saveBtn = byId("orchestrator_save_btn");
+        const saveAsBtn = byId("orchestrator_save_as_btn");
+        const startBtn = byId("start-run-btn");
+        const stopBtn = byId("stop-run-btn");
+        const resetBtn = byId("reset-run-btn");
+        const select = byId("orchestrator_select");
+
+        if (loadBtn) {
+            loadBtn.addEventListener("click", async () => {
+                try {
+                    const slug = byId("orchestrator_select")?.value || "";
+                    if (!slug) {
+                        throw new Error("No orchestrator selected.");
+                    }
+                    await loadOrchestrator(slug);
+                } catch (error) {
+                    setProfileNote(`Load failed: ${error.message}`);
+                }
+            });
+        }
+
+        if (saveBtn) {
+            saveBtn.addEventListener("click", async () => {
+                try {
+                    await saveOrchestrator(false);
+                } catch (error) {
+                    setProfileNote(`Save failed: ${error.message}`);
+                }
+            });
+        }
+
+        if (saveAsBtn) {
+            saveAsBtn.addEventListener("click", async () => {
+                try {
+                    await saveOrchestrator(true);
+                } catch (error) {
+                    setProfileNote(`Save As failed: ${error.message}`);
+                }
+            });
+        }
+
+        if (select) {
+            select.addEventListener("change", async () => {
+                try {
+                    const slug = select.value || "";
+                    if (slug) {
+                        await loadOrchestrator(slug);
+                        syncSelectedOrchestratorDisplay(slug);
+                    }
+                } catch (error) {
+                    setProfileNote(`Auto-load failed: ${error.message}`);
+                }
+            });
+        }
+
+        if (startBtn) {
+            startBtn.addEventListener("click", startRun);
+        }
+
+        if (stopBtn) {
+            stopBtn.addEventListener("click", stopRun);
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener("click", resetRunInterface);
+        }
+    }
+
+    async function init() {
+        initEvents();
+        await initOrchestrators();
+        await loadStatus();
+        await loadRunStatus();
+
+        window.setInterval(() => {
+            loadStatus();
+            loadRunStatus();
+        }, cfg.pollIntervalMs);
+    }
+
+    init().catch((error) => {
+        setProfileNote(`Initialization failed: ${error.message}`);
+        setRunNote(`Initialization failed: ${error.message}`);
+        applyRunState("error");
+    });
+})();

@@ -1,0 +1,30 @@
+{
+    "slug": "default",
+    "name": "Default",
+    "description": "Default orchestrator profile for standard Duo runs.",
+    "run": {
+        "turns": 6,
+        "max_lines": 5,
+        "max_chars": 500,
+        "history_depth": 3,
+        "max_sentences": 4
+    },
+    "kuzai": {
+        "label": "KUZAI",
+        "system_prompt": "You are KUZAI. Reply clearly, stay concise, and move the discussion forward.",
+        "temperature": 0.35,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_tokens": 300,
+        "repeat_penalty": 1.05
+    },
+    "darkai": {
+        "label": "DARKAI",
+        "system_prompt": "You are DARKAI. Reply clearly, stay concise, and react directly to the previous message.",
+        "temperature": 0.35,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_tokens": 300,
+        "repeat_penalty": 1.05
+    }
+}
