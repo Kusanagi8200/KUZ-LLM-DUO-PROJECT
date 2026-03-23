@@ -1,7 +1,7 @@
 
-LLM - DUO - RUN AWAY - #01
+#### LLM - DUO - RUN AWAY - #01
 ___________________________________________________________________________________________________________________
-INTRODUCTION
+#### ``INTRODUCTION``
 
 Within THE KUZ NETWORK laboratory, a new experiment will soon be set up around the local execution of open-source language models. This project, called Local LLM Duo, will consist of running two distinct models on two different machines and then automating their exchanges through a central orchestrator.
 
@@ -12,7 +12,7 @@ The real interest of the lab will lie in this integration layer, meaning the way
 The installation has not started yet. This document therefore presents the planned architecture, the tools that will be used, and the way the lab will be built from a technical perspective.
 
 ___________________________________________________________________________________________________________________
-OVERALL ARCHITECTURE
+#### ``OVERALL ARCHITECTURE``
 
 The lab will rely on a simple distributed architecture built around two physical nodes connected over the local network.
 
@@ -27,7 +27,7 @@ The second model’s reply will then be sent back to the first one, and the loop
 The system will therefore rely on a chain of requests controlled by the orchestrator, with preservation of the conversational context and management of turn order.
 
 ___________________________________________________________________________________________________________________
-HARDWARE INFRASTRUCTURE
+#### ``HARDWARE INFRASTRUCTURE``
 
 Machine A will be the main workstation of the lab. It will be equipped with an Intel i9 processor, 32 GB RAM, and an NVIDIA RTX 5060 8G VRAM. This machine will have a dual role: it will run the first model and also host the entire control logic of the experiment.
 
@@ -38,7 +38,7 @@ This hardware separation will make it possible to test a real distributed setup,
 This matters because the experiment will not only focus on the responses produced by the models, but also on the way a lightweight multi-node system will be built around them.
 
 ___________________________________________________________________________________________________________________
-OPENS-SOURCE TOOLS AND COMPONENTS
+#### ``OPENS-SOURCE TOOLS AND COMPONENTS``
 
 The lab will rely on a set of relatively lightweight open-source tools suited to this type of experimentation.
 
@@ -55,7 +55,7 @@ The goal will not be to lock the project immediately to a single model, but rath
 The overall design will therefore rely on four clearly separated layers: the Linux system, the NVIDIA GPU stack, the local inference engine, and the orchestration program.
 
 ___________________________________________________________________________________________________________________
-TECHNICAL DEPLOYMENT
+#### ``TECHNICAL DEPLOYMENT``
 
 The lab deployment will begin with the preparation of both machines. The operating system will first need to be installed, the base updates applied, the local network configured, and communication between both nodes verified.
 
@@ -76,7 +76,7 @@ It will probably be necessary to adjust the initial choices depending on memory 
 When both machines are able to answer inference calls independently, the next step will be to connect both services within the same application logic.
 
 ___________________________________________________________________________________________________________________
-ORCHESTRATOR DESIGN
+#### ``ORCHESTRATOR DESIGN``
 
 The orchestrator will be the software core of the project. It will not be a simple test script, but a lightweight control layer responsible for message routing, context construction, and global session management.
 
@@ -105,7 +105,7 @@ In the longer term, the program may also include complementary features such as 
 At first, however, the priority will remain the creation of a stable, readable, and reproducible loop between the two nodes.
 
 ___________________________________________________________________________________________________________________
-SOFTWARE DEPLOYMENT SEQUENCE
+#### ``SOFTWARE DEPLOYMENT SEQUENCE``
 
 The lab will probably be built in successive stages. The first phase will consist in validating each machine independently. stable system, detected GPU, functional Ollama service, loaded model, and correct response to a local call. Until this base is fully under control, moving on to inter-machine orchestration will not be relevant.
 
@@ -116,7 +116,7 @@ The third phase will be the development of the first functional orchestrator. It
 The lab will therefore not be built as a monolithic block, but as a set of technical building blocks validated one by one. This method will make it possible to keep a clear understanding of the system, identify friction points quickly, and evolve the project cleanly.
 
 ___________________________________________________________________________________________________________________
-PROJECT PURPOSE
+#### ``PROJECT PURPOSE``
 
 Through Local LLM Duo, the KUZ NETWORK laboratory will set up an experimental environment focused on local open-source LLMs, GPU-based inference, and their orchestration within a lightweight distributed architecture.
 
@@ -126,4 +126,4 @@ In that sense, Local LLM Duo will be less a simple demonstration than a practica
 
 ___________________________________________________________________________________________________________________
 
-KUSANAGI8200 - THE KUZ NETWORK - @2026
+#### ``KUSANAGI8200 - THE KUZ NETWORK - @2026``
