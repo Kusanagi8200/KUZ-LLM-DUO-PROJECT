@@ -44,11 +44,11 @@ The lab will rely on a set of relatively lightweight open-source tools suited to
 
 The system foundation will most likely be built on Linux, using a base such as Debian, in order to provide a stable environment, straightforward administration, and compatibility with the GPU tooling required for local inference.
 
-For the model execution layer, the planned choice will be Ollama. This tool will make it possible to run language models locally, manage them as services, and, most importantly, expose a simple HTTP API that can easily be used from a Python script.
+For the model execution layer, the planned choice will be Llama.cpp. This tool will make it possible to run language models locally, manage them as services, and, most importantly, expose a simple HTTP API that can easily be used from a Python script.
 
 This point will be central to the project, since the orchestrator will rely on this API to manage the exchanges between the two machines.
 
-As for the models themselves, several open-source families may be tested depending on the available resources and the results sought. The lab will probably begin with models from the Open-Source Models family, then possibly compare their behavior with other models available in the Ollama ecosystem.
+As for the models themselves, several open-source families may be tested depending on the available resources and the results sought. The lab will probably begin with models from the Open-Source Models family, then possibly compare their behavior with other models available in the Llama.cpp ecosystem.
 
 The goal will not be to lock the project immediately to a single model, but rather to create a flexible technical base that will make it easy to switch engines or models over time.
 
@@ -67,9 +67,9 @@ At this stage, the goal will not yet be to run the models, but to confirm that t
 
 The first checks will therefore focus on hardware detection, driver versions, and the general stability of the compute environment.
 
-After that phase, the lab will move on to installing the inference engine. Ollama will be deployed on each machine and started locally as a service. It will then be necessary to verify that each node can correctly answer local API requests. This stage will confirm that a simple prompt can be sent to the model and that a structured response can be retrieved without service-side errors.
+After that phase, the lab will move on to installing the inference engine. Llama.cpp will be deployed on each machine and started locally as a service. It will then be necessary to verify that each node can correctly answer local API requests. This stage will confirm that a simple prompt can be sent to the model and that a structured response can be retrieved without service-side errors.
 
-Once Ollama is operational, the first models will be downloaded and loaded onto each machine. This is where the lab will begin testing compatibility between the size of the chosen models, the available memory, and the actual GPU performance.
+Once Llama.cpp is operational, the first models will be downloaded and loaded onto each machine. This is where the lab will begin testing compatibility between the size of the chosen models, the available memory, and the actual GPU performance.
 
 It will probably be necessary to adjust the initial choices depending on memory usage, observed inference speed, and response stability. The lab will therefore be built progressively, prioritizing reliable operation before any advanced optimization.
 
@@ -80,11 +80,11 @@ ________________________________________________________________________________
 
 The orchestrator will be the software core of the project. It will not be a simple test script, but a lightweight control layer responsible for message routing, context construction, and global session management.
 
-The natural choice will be Python, since this language will make it possible to build clear, modular logic that can easily evolve over time. The orchestrator will most likely use a standard HTTP library to communicate with the Ollama APIs running on both machines.
+The natural choice will be Python, since this language will make it possible to build clear, modular logic that can easily evolve over time. The orchestrator will most likely use a standard HTTP library to communicate with the Llama.cpp APIs running on both machines.
 
 It will also include an internal data structure responsible for storing the conversation history, along with a prompt-formatting layer so that each model receives usable context.
 
-The program will begin by loading a configuration defining the essential parameters --> IP addresses or DNS names of both nodes, ports used by the Ollama services, model names, inference settings, maximum number of turns, and possibly dedicated system instructions for each role.
+The program will begin by loading a configuration defining the essential parameters --> IP addresses or DNS names of both nodes, ports used by the Llama.cpp services, model names, inference settings, maximum number of turns, and possibly dedicated system instructions for each role.
 
 This configuration phase will be important because it will make it possible to keep the application logic clearly separated from the experiment parameters.
 
@@ -107,7 +107,7 @@ At first, however, the priority will remain the creation of a stable, readable, 
 ___________________________________________________________________________________________________________________
 #### ``SOFTWARE DEPLOYMENT SEQUENCE``
 
-The lab will probably be built in successive stages. The first phase will consist in validating each machine independently. stable system, detected GPU, functional Ollama service, loaded model, and correct response to a local call. Until this base is fully under control, moving on to inter-machine orchestration will not be relevant.
+The lab will probably be built in successive stages. The first phase will consist in validating each machine independently. stable system, detected GPU, functional Llama.cpp service, loaded model, and correct response to a local call. Until this base is fully under control, moving on to inter-machine orchestration will not be relevant.
 
 The second phase will consist in validating remote communication. From the main machine, it will be necessary to confirm that an HTTP call to Machine B can successfully retrieve a response from the remote model. This step will help isolate network, firewall, service, or request-format issues before the full dialogue logic is introduced.
 
