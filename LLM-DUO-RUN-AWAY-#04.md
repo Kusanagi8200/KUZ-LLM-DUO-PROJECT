@@ -8,7 +8,7 @@
 Two local open-source LLMs running on two separate physical machines, communicating in an automated A/B loop driven by a central Python orchestrator. Control interface served by PHP/Apache on the main node. 
 
 ---
-#### INFRASTRUCTURE
+#### ``INFRASTRUCTURE``
 
 #### Node A - fhc2 - KUZAI
 
@@ -24,7 +24,7 @@ Two local open-source LLMs running on two separate physical machines, communicat
 
 ---
 
-#### Node B - fhc - DARKAI
+#### ``Node B - fhc - DARKAI``
 
 | Parameter | Value |
 |---|---|
@@ -38,9 +38,9 @@ Two local open-source LLMs running on two separate physical machines, communicat
 
 ---
 
-#### DEPLOYMENT - Node B (fhc)
+#### ``DEPLOYMENT - Node B (fhc)``
 
-#### INITIAL HARDWARE AUDIT
+#### ``INITIAL HARDWARE AUDIT``
 
 ```bash
 hostnamectl
@@ -83,7 +83,7 @@ dpkg -l | egrep 'nvidia|cuda|nouveau' || true
 lsmod | egrep 'nvidia|nouveau' || true
 ```
 ---
-#### REMOVE OLLAMA
+#### ``REMOVE OLLAMA``
 
 ```bash
 systemctl disable --now ollama 2>/dev/null || true
@@ -111,7 +111,7 @@ find /etc/systemd/system /usr/local/bin /usr/share /var/lib /var/log /root /home
   -maxdepth 3 \( -iname '*ollama*' -o -iname '.ollama' \) 2>/dev/null
 ```
 ---
-#### INSTALL SYSTEM DEPENDENCIES
+#### ``INSTALL SYSTEM DEPENDENCIES``
 
 ```bash
 apt update
@@ -133,7 +133,7 @@ apt install -y \
   pciutils
 ```
 ---
-#### PIN NVIDIA DRIVER VERSION
+#### ``PIN NVIDIA DRIVER VERSION``
 
 ```bash
 apt-mark hold \
@@ -143,7 +143,7 @@ apt-mark hold \
   nvidia-dkms-575
 ```
 ---
-#### ADD CUDA REPOSITORY
+#### ``ADD CUDA REPOSITORY``
 
 ```bash
 wget -O /usr/share/keyrings/cuda-archive-keyring.gpg \
@@ -160,20 +160,20 @@ EOF
 apt update
 ```
 ---
-#### CHECK AVAILABLE CUDA CANDIDATES
+#### ``CHECK AVAILABLE CUDA CANDIDATES``
 
 ```bash
 apt-cache policy cuda-toolkit-12-9 cuda-toolkit-13-2 cuda-toolkit-13
 nvidia-smi
 ```
 ---
-#### INSTALL CUDA TOOLKIT
+#### ``INSTALL CUDA TOOLKIT``
 
 ```bash
 apt install -y cuda-toolkit-12-9
 ```
 ---
-#### SET CUDA ENVIRONMENT VARIABLES
+#### ``SET CUDA ENVIRONMENT VARIABLES``
 
 ```bash
 cat > /etc/profile.d/cuda.sh <<'EOF'
@@ -186,7 +186,7 @@ ln -sf /etc/profile.d/cuda.sh /etc/profile.d/zz-cuda.sh
 source /etc/profile.d/cuda.sh
 ```
 ---
-#### VERIFY CUDA INSTALLATION
+#### ``VERIFY CUDA INSTALLATION``
 
 ```bash
 which nvcc
@@ -198,7 +198,7 @@ nvidia-smi
 echo $PATH
 ```
 ---
-#### CREATE WORKING DIRECTORIES
+#### ``CREATE WORKING DIRECTORIES``
 
 ```bash
 mkdir -p /opt/src
@@ -208,7 +208,7 @@ mkdir -p /opt/llm/run
 mkdir -p /var/log/llm-duo
 ```
 ---
-#### BUILD LLAMA.CCP WITH CUDA 
+#### ``BUILD LLAMA.CCP WITH CUDA`` 
 
 ```bash
 cd /opt/src
@@ -222,7 +222,7 @@ cmake -S . -B build -G Ninja -DGGML_CUDA=ON
 cmake --build build --config Release -j"$(nproc)"
 ```
 ---
-#### VERIFY BINARIES
+#### ``VERIFY BINARIES``
 
 ```bash
 ls -1 build/bin | grep '^llama-'
