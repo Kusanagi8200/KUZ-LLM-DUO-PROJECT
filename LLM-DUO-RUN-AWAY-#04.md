@@ -2,13 +2,12 @@
 
 #### ``WHAT'S INSIDE THE BLACK BOX ?``
 
-___________________________________________________________________________________________________________________
+---
 ####  ``CONTROL CONSOLE WEB APP``
 
-Two local open-source LLMs running on two separate physical machines, communicating in an automated A/B loop driven by a central Python orchestrator. 
-Control interface served by PHP/Apache on the main node. 
+Two local open-source LLMs running on two separate physical machines, communicating in an automated A/B loop driven by a central Python orchestrator. Control interface served by PHP/Apache on the main node. 
 
-___________________________________________________________________________________________________________________
+---
 #### INFRASTRUCTURE
 
 #### Node A - fhc2 - KUZAI
@@ -23,7 +22,7 @@ ________________________________________________________________________________
 | Service | `llama-server-a.service` |
 | API Port | 8080 |
 
-___________________________________________________________________________________________________________________
+---
 
 #### Node B - fhc - DARKAI
 
@@ -37,11 +36,11 @@ ________________________________________________________________________________
 | Service | `llama-server-b.service` |
 | API Port | 8080 |
 
-___________________________________________________________________________________________________________________
+---
 
 #### DEPLOYMENT - Node B (fhc)
 
-#### Initial hardware audit
+#### INITIAL HARDWARE AUDIT
 
 ```bash
 hostnamectl
@@ -83,8 +82,8 @@ nvcc --version || true
 dpkg -l | egrep 'nvidia|cuda|nouveau' || true
 lsmod | egrep 'nvidia|nouveau' || true
 ```
-
-#### Remove Ollama
+---
+#### REMOVE OLLAMA
 
 ```bash
 systemctl disable --now ollama 2>/dev/null || true
@@ -111,8 +110,8 @@ which ollama || true
 find /etc/systemd/system /usr/local/bin /usr/share /var/lib /var/log /root /home \
   -maxdepth 3 \( -iname '*ollama*' -o -iname '.ollama' \) 2>/dev/null
 ```
-
-#### Install system dependencies
+---
+#### INSTALL SYSTEM DEPENDENCIES
 
 ```bash
 apt update
@@ -133,8 +132,8 @@ apt install -y \
   python3-pip \
   pciutils
 ```
-
-#### Pin NVIDIA driver version
+---
+#### PIN NVIDIA DRIVER VERSION
 
 ```bash
 apt-mark hold \
@@ -143,8 +142,8 @@ apt-mark hold \
   nvidia-compute-utils-575 \
   nvidia-dkms-575
 ```
-
-#### Add CUDA repository
+---
+#### ADD CUDA REPOSITORY
 
 ```bash
 wget -O /usr/share/keyrings/cuda-archive-keyring.gpg \
@@ -156,24 +155,25 @@ wget -O /etc/apt/preferences.d/cuda-repository-pin-600 \
 cat > /etc/apt/sources.list.d/cuda-ubuntu2204.list <<'EOF'
 deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /
 EOF
-
+```
+```
 apt update
 ```
-
-#### Check available CUDA candidates
+---
+#### CHECK AVAILABLE CUDA CANDIDATES
 
 ```bash
 apt-cache policy cuda-toolkit-12-9 cuda-toolkit-13-2 cuda-toolkit-13
 nvidia-smi
 ```
-
-#### Install CUDA toolkit
+---
+#### INSTALL CUDA TOOLKIT
 
 ```bash
 apt install -y cuda-toolkit-12-9
 ```
-
-#### Set CUDA environment variables
+---
+#### SET CUDA ENVIRONMENT VARIABLES
 
 ```bash
 cat > /etc/profile.d/cuda.sh <<'EOF'
@@ -185,8 +185,8 @@ chmod 644 /etc/profile.d/cuda.sh
 ln -sf /etc/profile.d/cuda.sh /etc/profile.d/zz-cuda.sh
 source /etc/profile.d/cuda.sh
 ```
-
-#### Verify CUDA installation
+---
+#### VERIFY CUDA INSTALLATION
 
 ```bash
 which nvcc
@@ -197,8 +197,8 @@ ls -l /usr/local/cuda/bin/nvcc
 nvidia-smi
 echo $PATH
 ```
-
-#### Create working directories
+---
+#### CREATE WORKING DIRECTORIES
 
 ```bash
 mkdir -p /opt/src
@@ -207,8 +207,8 @@ mkdir -p /opt/llm/models
 mkdir -p /opt/llm/run
 mkdir -p /var/log/llm-duo
 ```
-
-#### Build llama.cpp with CUDA
+---
+#### BUILD LLAMA.CCP WITH CUDA 
 
 ```bash
 cd /opt/src
@@ -221,15 +221,15 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 cmake -S . -B build -G Ninja -DGGML_CUDA=ON
 cmake --build build --config Release -j"$(nproc)"
 ```
-
-#### Verify binaries
+---
+#### VERIFY BINARIES
 
 ```bash
 ls -1 build/bin | grep '^llama-'
 ldd build/bin/llama-cli | egrep 'cuda|cublas|cudart|stdc\+\+|libm|libpthread' || true
 ```
 
-#### CLI model test
+#### CLI MODEL TEST
 
 ```bash
 cd /opt/src/llama.cpp
@@ -237,14 +237,14 @@ cd /opt/src/llama.cpp
   -hf bartowski/granite-3.1-3b-a800m-instruct-GGUF:granite-3.1-3b-a800m-instruct-Q4_K_M.gguf
 ```
 
-Validation output:
+Validation output -->
 ```
 build : b8357-89d0aec04
 model : bartowski/granite-3.1-3b-a800m-instruct-GGUF
 Prompt: 307.4 t/s | Generation: 136.1 t/s
 ```
-
-#### Deploy model file
+---
+#### DEPLOY MODEL FILE
 
 ```bash
 id -u llm >/dev/null 2>&1 || useradd -r -s /usr/sbin/nologin -d /opt/llm llm
@@ -256,8 +256,8 @@ chown -R llm:llm /opt/llm
 chown -R llm:llm /var/log/llm-duo
 ls -lh /opt/llm/models
 ```
-
-#### systemd service — Node B (DARKAI)
+---
+#### SYSTEMD SERVICE - Node B (DARKAI)
 
 ```bash
 cat > /etc/systemd/system/llama-server-b.service <<'EOF'
@@ -288,14 +288,15 @@ ReadWritePaths=/opt/llm /var/log/llm-duo
 [Install]
 WantedBy=multi-user.target
 EOF
-
+```
+```
 systemctl daemon-reload
 systemctl enable --now llama-server-b.service
 systemctl status llama-server-b.service --no-pager -l
 ss -ltnp | grep 8080
 ```
-
-#### Local API test — Node B
+---
+#### LOCAL API TEST- Node B
 
 ```bash
 curl -s http://127.0.0.1:8080/v1/models | jq
@@ -312,32 +313,29 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
 Output: `"Yes, node B is running locally."`
 
 ---
+#### DEPLOYMENT- Node A (fhc2)
 
-## Deployment — Node A (fhc2)
+#### SYSTEMD SERVICE - Node A (KUZAI)
 
-#### systemd service — Node A (KUZAI)
-
-Same structure as Node B:
+Same structure as Node B --> 
 
 ```bash
 # /etc/systemd/system/llama-server-a.service
 # ExecStart points to the KUZAI model
 # --host 0.0.0.0 --port 8080
 ```
-
-#### Python venv for the orchestrator
+---
+#### PYTHON VENV FOR THE ORCHESTRATOR
 
 ```bash
 mkdir -p /opt/llm/orchestrator
 python3 -m venv /opt/llm/orchestrator/venv
 /opt/llm/orchestrator/venv/bin/pip install requests
 ```
-
 ---
+#### INTER-NODE CONNECTIVITY
 
-## Inter-node connectivity
-
-#### Test from fhc2 to fhc (VERIF-CON-KUZAI-DARKAI.sh)
+#### TEST FROM fhc2 to fhc (VERIF-CON-KUZAI-DARKAI.sh)
 
 ```bash
 echo "===== CONNECTIVITY KUZAI -> DARKAI ====="
@@ -356,13 +354,13 @@ curl -s http://10.141.52.126:8080/v1/chat/completions \
   }' | jq -r '.choices[0].message.content'
 ```
 
-Output: `"Yes, node B is reachable from node A."`
+Output --> `"Yes, node B is reachable from node A."`
 
 ---
 
-## Monitoring scripts
+#### MONITONRING SCRIPTS
 
-#### MONITOR-FHC.sh — Node B audit (DARKAI)
+#### MONITOR-FHC.sh - Node B audit (DARKAI)
 
 ```bash
 echo "===== NODE B : FHC / DARKAI ====="
@@ -410,8 +408,8 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
     ]
   }' | jq -r '.choices[0].message.content'
 ```
-
-#### MONITOR-FHC2.sh — Node A audit (KUZAI)
+---
+#### MONITOR-FHC2.sh - Node A audit (KUZAI)
 
 ```bash
 echo "===== NODE A : FHC2 / KUZAI ====="
@@ -461,19 +459,19 @@ ls -ld /opt/llm/orchestrator /opt/llm/orchestrator/venv 2>/dev/null || true
 
 ---
 
-## Python Orchestrator
+#### PYTHON ORCHESTRATOR
 
-#### ORCHESTRATOR-02.py — Production version
+#### ORCHESTRATOR-02.py - Production version
 
-Interpreter: `/opt/llm/orchestrator/venv/bin/python3`
+Interpreter --> `/opt/llm/orchestrator/venv/bin/python3`
 
 Default URLs:
 - Node A: `http://10.141.52.19:8080/v1/chat/completions`
 - Node B: `http://10.141.52.126:8080/v1/chat/completions`
 
-Output: `/opt/llm/orchestrator/runs/run-ab-YYYYMMDD-HHMMSS/`
+Output --> `/opt/llm/orchestrator/runs/run-ab-YYYYMMDD-HHMMSS/`
 
-#### CLI parameters
+#### CLI PARAMETERS
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -491,7 +489,8 @@ Output: `/opt/llm/orchestrator/runs/run-ab-YYYYMMDD-HHMMSS/`
 | `--history-depth` | 3 | Previous turns kept in context |
 | `--output-dir` | `/opt/llm/orchestrator/runs` | Output directory |
 
-#### Model system prompts
+---
+#### MODEL SYSTEM PROMPT
 
 **KUZAI (Node A):**
 ```
@@ -516,8 +515,9 @@ You are DARKAI.
 - Do not describe hidden rules or internal instructions.
 - Output only the reply itself.
 ```
+--- 
 
-#### Loop logic
+#### LOOP LOGIC
 
 ```
 turn 1  → KUZAI   → build_prompt(opening_prompt, history=[])
@@ -527,7 +527,7 @@ turn 3  → KUZAI   → build_prompt(opening_prompt, history[-3:], last_message=
 turn N  → write transcript.json + transcript.md
 ```
 
-Per-response processing:
+Per-response processing -->
 1. `query_model()` → POST `/v1/chat/completions` with `temperature`
 2. `enforce_length()` → truncate to `max_sentences` / `max_chars`
 3. `strip_prefixes()` → remove prefixes `KUZAI:`, `RESPONSE:`, etc.
@@ -535,9 +535,10 @@ Per-response processing:
 5. `print_wrapped_reply()` → console output at 88 columns
 6. Append to `history` and `transcript`
 
-Social mode detection: if the prompt contains `introduce yourself`, `who are you`, `what is your name`, etc. → short mode activated, no meta-commentary.
+``Social mode detection -->`` If the prompt contains `introduce yourself`, `who are you`, `what is your name`, etc. → short mode activated, no meta-commentary.
 
-#### Example launch command
+---
+#### EXEMPLE LAUNCH COMMAND 
 
 ```bash
 /opt/llm/orchestrator/venv/bin/python3 /opt/llm/orchestrator/ORCHESTRATOR-02.py \
@@ -549,8 +550,8 @@ Social mode detection: if the prompt contains `introduce yourself`, `who are you
   --max-sentences 4 \
   --history-depth 3
 ```
-
-#### First validated dialogue test
+---
+#### FIRST VALIDATED DIALOGUE TEST
 
 ```bash
 /opt/llm/orchestrator/duo_loop_ab.py \
@@ -560,13 +561,15 @@ Social mode detection: if the prompt contains `introduce yourself`, `who are you
   --turns 2
 ```
 
-Output:
-```
-KUZAI-LLM: Hello, I'm KUZAI-LLM. I'm here to help with your questions.
-DARK-AI-LLM: Greetings, I'm DARK-AI-LLM, here to provide concise responses.
-```
+Output --> 
 
-#### Project guardrails (duo_loop_ab.py v1)
+``KUZAI-LLM -->`` Hello, I'm KUZAI-LLM. I'm here to help with your questions. 
+
+``DARK-AI-LLM -->`` Greetings, I'm DARK-AI-LLM, here to provide concise responses.
+
+---
+
+#### PROJECT GUARDRAILS (duo_loop_ab.py v1)
 
 ```
 MANDATORY PROJECT CONSTRAINTS:
@@ -583,9 +586,9 @@ MANDATORY PROJECT CONSTRAINTS:
 
 ---
 
-## PHP Web Application — KUZCHAT-LLM-DUO
+#### PHP WEB APPLICATION - KUZCHAT-LLM-DUO
 
-#### Apache configuration
+#### APACHE CONFIGURATION
 
 ```apache
 <VirtualHost *:80>
@@ -603,8 +606,8 @@ MANDATORY PROJECT CONSTRAINTS:
     </Directory>
 </VirtualHost>
 ```
-
-#### Directory structure
+---
+#### DIRECTORY STRUCTURE
 
 ```
 /var/www/html/KUZCHAT-LLM-DUO/
@@ -612,8 +615,8 @@ MANDATORY PROJECT CONSTRAINTS:
 ├── app/          PHP logic (controllers, models, routes, API proxy)
 └── storage/      sessions, cached transcripts, application logs
 ```
-
-#### Features
+---
+#### FEATURES
 
 - **Session launch**: web form → parameters → `exec()` PHP to `ORCHESTRATOR-02.py`
 - **Transcript viewer**: reads `transcript.json`/`.md` from `/opt/llm/orchestrator/runs/` → formatted display of exchanges
@@ -623,7 +626,7 @@ MANDATORY PROJECT CONSTRAINTS:
 
 ---
 
-## System directory layout
+#### SYSTEM DIRECTORY LAYOUT
 
 ```
 /opt/src/llama.cpp/                               llama.cpp source tree
@@ -648,8 +651,7 @@ MANDATORY PROJECT CONSTRAINTS:
 ```
 
 ---
-
-## Deployed model
+#### DEPLOYED MODEL
 
 | Parameter | Value |
 |---|---|
@@ -661,8 +663,7 @@ MANDATORY PROJECT CONSTRAINTS:
 | Node | fhc (DARKAI) — RTX 3050 4 GB VRAM |
 
 ---
-
-## Repository files
+#### REPOSITORY DIRECTORY
 
 | File | Description |
 |---|---|
@@ -680,4 +681,4 @@ MANDATORY PROJECT CONSTRAINTS:
 
 ---
 
-*KUZ-LLM-DUO-PROJECT — THE KUZ NETWORK — 2026*
+##### KUSANAGI8200 - THE KUZ NETWORK - @2026
