@@ -656,25 +656,34 @@ MANDATORY PROJECT CONSTRAINTS:
 | Parameter | Value |
 |---|---|
 | Name | `bartowski/granite-3.1-3b-a800m-instruct-Q4_K_M.gguf` |
-| Family | IBM Granite 3.1 — 3B parameters |
+| Family | IBM Granite 3.1 - 3B parameters |
 | Quantization | Q4_K_M |
 | Prompt perf. | 307 t/s |
 | Generation perf. | 136 t/s |
-| Node | fhc (DARKAI) — RTX 3050 4 GB VRAM |
+| Node | fhc (DARKAI) - RTX 3050 4 GB VRAM |
+
+| Parameter | Value |
+|---|---|
+| Name | `ggml-org/gemma-3-1b-it-GGUF:Q4_K_M.gguf` |
+| Family | Google Gemma 3 - 1B parameters |
+| Quantization | Q4_K_M |
+| Prompt perf. | - |
+| Generation perf. | - |
+| **Node** | fhc2 - KUZAI - RTX 5060 8 GB VRAM |
 
 ---
 #### REPOSITORY DIRECTORY
 
 | File | Description |
 |---|---|
-| `ORCHESTRATOR-01.py` | Generic orchestrator — all URLs required via CLI |
-| `ORCHESTRATOR-02.py` | Production orchestrator — fhc/fhc2 IPs hardcoded as defaults |
+| `ORCHESTRATOR-01.py` | Generic orchestrator - all URLs required via CLI |
+| `ORCHESTRATOR-02.py` | Production orchestrator - fhc/fhc2 IPs hardcoded as defaults |
 | `kuzchat-llm-duo.conf` | Apache VirtualHost config |
 | `MONITOR-FHC.sh` | Full Node B audit |
 | `MONITOR-FHC2.sh` | Full Node A audit + Python venv check |
 | `VERIF-CON-KUZAI-DARKAI.sh` | Inter-node connectivity and API test |
 | `LLM-DUO-RUN-AWAY-#02.md` | Deployment journal phase 2 |
-| `LLM-DUO-RUN-AWAY-#03.md` | Deployment journal phase 3 — full Node B setup |
+| `LLM-DUO-RUN-AWAY-#03.md` | Deployment journal phase 3 - full Node B setup |
 | `app/` | PHP backend |
 | `public/` | Web frontend |
 | `storage/` | PHP persistent data |
