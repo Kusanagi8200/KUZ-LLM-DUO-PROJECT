@@ -97,7 +97,7 @@ svg{display:block;width:100%;height:auto;min-width:720px}
 <div class="wrapper">
   <header class="header">
     <h1>KUZCHAT-LLM-DUO - Application Synoptic</h1>
-    <p>THE KUZ NETWORK · 2026 · Kusanagi8200</p>
+    <p>A KUZ NETWORK SOLUTION – [BETA-0.01.2026]</p>
   </header>
 
   <main class="synoptic">
@@ -144,9 +144,9 @@ svg{display:block;width:100%;height:auto;min-width:720px}
         <article class="card violet span-4"><div class="card-title">orchestrators-list.php</div><div class="card-text">GET · returns sorted profiles from storage/orchestrators/*.json</div></article>
         <article class="card violet span-4"><div class="card-title">orchestrator-read.php</div><div class="card-text">GET ?name=slug · normalize + clamp fields · 404 if missing</div></article>
         <article class="card violet span-4"><div class="card-title">orchestrator-save.php</div><div class="card-text">POST profile + save_as_name · sanitize slug · normalize fields · write JSON</div></article>
-        <article class="card amber span-4"><div class="card-title">storage/orchestrators/</div><div class="card-text">default.json · lab-01.json · custom profiles read/write by orchestrator APIs</div></article>
-        <article class="card amber span-4"><div class="card-title">storage/runs/</div><div class="card-text">run-ab-YYYYMMDD-HHMMSS · transcript.json · transcript.md written by Python orchestrator</div></article>
-        <article class="card amber span-4"><div class="card-title">storage/launcher/</div><div class="card-text">current_run.pid · current_run.json · stdout/stderr logs · liveness metadata</div></article>
+        <article class="card amber span-4"><div class="card-title">storage/orchestrators/</div><div class="card-text">default.json · lab-01.json · custom profiles read/write by PHP orchestrator APIs</div></article>
+        <article class="card amber span-4"><div class="card-title">storage/launcher/</div><div class="card-text">current_run.pid · current_run.json · stdout/stderr logs · liveness metadata written by PHP launcher</div></article>
+        <article class="card amber span-4"><div class="card-title">storage/runs/</div><div class="card-text">run-ab-YYYYMMDD-HHMMSS · transcript.json · transcript.md written by the Python orchestrator output flow</div></article>
       </div>
     </section>
 
@@ -176,21 +176,19 @@ svg{display:block;width:100%;height:auto;min-width:720px}
       <section class="band cyan">
         <div class="band-head"><div class="band-title">Architecture Flow Diagram</div><div class="band-note"></div></div>
         <div class="svg-panel">
-          <svg viewBox="0 0 980 520" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 980 430" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2a6080" stroke-width="1.6"/></marker>
-              <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#a07020" stroke-width="1.6"/></marker>
-              <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#1a6a5a" stroke-width="1.6"/></marker>
+              <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2a6080" stroke-width="1.6" fill="none"/></marker>
+              <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#a07020" stroke-width="1.6" fill="none"/></marker>
+              <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#1a6a5a" stroke-width="1.6" fill="none"/></marker>
             </defs>
 
-            <!-- FRONTEND -->
             <rect x="20" y="30" width="180" height="110" rx="12" fill="#081829" stroke="#1a4a5a"/>
             <text x="35" y="55" fill="#7bf2ff" font-size="13">FRONTEND</text>
             <text x="35" y="75" fill="#8ea8b8" font-size="10">Browser UI</text>
             <text x="35" y="92" fill="#8ea8b8" font-size="10">Editor / Run</text>
             <text x="35" y="109" fill="#8ea8b8" font-size="10">Polling 5s</text>
 
-            <!-- BACKEND -->
             <rect x="260" y="30" width="220" height="130" rx="12" fill="#081829" stroke="#1a4a5a"/>
             <text x="275" y="55" fill="#7bf2ff" font-size="13">PHP BACKEND</text>
             <text x="275" y="75" fill="#8ea8b8" font-size="10">index.php / config.php</text>
@@ -198,7 +196,6 @@ svg{display:block;width:100%;height:auto;min-width:720px}
             <text x="275" y="109" fill="#8ea8b8" font-size="10">status / run-status</text>
             <text x="275" y="126" fill="#8ea8b8" font-size="10">orchestrator APIs</text>
 
-            <!-- ORCHESTRATOR -->
             <rect x="530" y="30" width="200" height="130" rx="12" fill="#111018" stroke="#5a4926"/>
             <text x="545" y="55" fill="#ffc966" font-size="13">ORCHESTRATOR</text>
             <text x="545" y="75" fill="#8ea8b8" font-size="10">duo_loop_engine.py</text>
@@ -206,44 +203,56 @@ svg{display:block;width:100%;height:auto;min-width:720px}
             <text x="545" y="109" fill="#8ea8b8" font-size="10">guardrails</text>
             <text x="545" y="126" fill="#8ea8b8" font-size="10">transcripts</text>
 
-            <!-- NODES -->
             <rect x="780" y="30" width="170" height="130" rx="12" fill="#0b0d1d" stroke="#3a2a5a"/>
             <text x="795" y="55" fill="#c19cff" font-size="13">LLM NODES</text>
             <text x="795" y="75" fill="#8ea8b8" font-size="10">KUZAI / DARKAI</text>
             <text x="795" y="92" fill="#8ea8b8" font-size="10">llama-server</text>
             <text x="795" y="109" fill="#8ea8b8" font-size="10">:8080 API</text>
 
-            <!-- STORAGE -->
-            <rect x="260" y="230" width="220" height="110" rx="12" fill="#111018" stroke="#5a4926"/>
-            <text x="275" y="255" fill="#ffc966" font-size="13">STORAGE</text>
-            <text x="275" y="275" fill="#8ea8b8" font-size="10">orchestrators/</text>
-            <text x="275" y="292" fill="#8ea8b8" font-size="10">runs/</text>
-            <text x="275" y="309" fill="#8ea8b8" font-size="10">launcher/</text>
+            <rect x="230" y="230" width="220" height="110" rx="12" fill="#111018" stroke="#5a4926"/>
+            <text x="245" y="255" fill="#ffc966" font-size="13">STORAGE (PHP)</text>
+            <text x="245" y="275" fill="#8ea8b8" font-size="10">orchestrators/</text>
+            <text x="245" y="292" fill="#8ea8b8" font-size="10">launcher/</text>
+            <text x="245" y="309" fill="#8ea8b8" font-size="10">pid / meta</text>
 
-            <!-- SYSTEM -->
-            <rect x="780" y="230" width="170" height="110" rx="12" fill="#081829" stroke="#1a4a5a"/>
-            <text x="795" y="255" fill="#7bf2ff" font-size="13">SYSTEM</text>
-            <text x="795" y="275" fill="#8ea8b8" font-size="10">/proc</text>
-            <text x="795" y="292" fill="#8ea8b8" font-size="10">/v1/models</text>
-            <text x="795" y="309" fill="#8ea8b8" font-size="10">health</text>
+            <rect x="560" y="230" width="220" height="110" rx="12" fill="#111018" stroke="#5a4926"/>
+            <text x="575" y="255" fill="#ffc966" font-size="13">STORAGE (RUNS)</text>
+            <text x="575" y="275" fill="#8ea8b8" font-size="10">runs/</text>
+            <text x="575" y="292" fill="#8ea8b8" font-size="10">transcript.json</text>
+            <text x="575" y="309" fill="#8ea8b8" font-size="10">transcript.md</text>
 
-            <!-- CLEAN FLOWS -->
-            <path d="M200 80 L260 80" stroke="#2a6080" stroke-width="2" marker-end="url(#arrCyan)"/>
-            <path d="M480 80 L530 80" stroke="#a07020" stroke-width="2" marker-end="url(#arrAmber)"/>
-            <path d="M730 80 L780 80" stroke="#1a6a5a" stroke-width="2" marker-end="url(#arrGreen)"/>
+            <rect x="20" y="230" width="170" height="110" rx="12" fill="#081829" stroke="#1a4a5a"/>
+            <text x="35" y="255" fill="#7bf2ff" font-size="13">SYSTEM</text>
+            <text x="35" y="275" fill="#8ea8b8" font-size="10">/proc</text>
+            <text x="35" y="292" fill="#8ea8b8" font-size="10">/v1/models</text>
+            <text x="35" y="309" fill="#8ea8b8" font-size="10">health</text>
 
-            <!-- VERTICAL FLOWS -->
-            <path d="M630 160 L630 230" stroke="#1a6a5a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrGreen)"/>
-            <path d="M480 285 L780 285" stroke="#2a6080" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrCyan)"/>
+            <path d="M200 80 L260 80" stroke="#2a6080" stroke-width="2" marker-end="url(#arrCyan)" fill="none"/>
+            <path d="M480 80 L530 80" stroke="#a07020" stroke-width="2" marker-end="url(#arrAmber)" fill="none"/>
+            <path d="M730 80 L780 80" stroke="#1a6a5a" stroke-width="2" marker-end="url(#arrGreen)" fill="none"/>
 
-            <!-- LABELS CLEAN -->
+            <path d="M370 160 L370 230" stroke="#a07020" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrAmber)" fill="none"/>
+            <path d="M630 160 L630 230" stroke="#1a6a5a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrGreen)" fill="none"/>
+            <path d="M260 145 L220 145 L220 210 L190 210 L190 230" stroke="#2a6080" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrCyan)" fill="none"/>
+
             <text x="210" y="70" fill="#4a7a9b" font-size="9">HTTP</text>
             <text x="500" y="70" fill="#4a7a9b" font-size="9">EXEC</text>
             <text x="740" y="70" fill="#4a7a9b" font-size="9">LLM</text>
-            <text x="640" y="200" fill="#4a7a9b" font-size="9">WRITE</text>
-            <text x="560" y="275" fill="#4a7a9b" font-size="9">STATUS</text>
-
+            
+            
+            
           </svg>
+          <div class="note" style="margin-top:4px; padding:12px 14px; border:1px solid rgba(122,198,255,.18); border-radius:10px; background:rgba(7,20,34,.45);">
+            <div class="muted" style="line-height:1.7;">
+              The browser interface sends HTTP requests to the PHP backend and polls it every 5 seconds for status updates.
+              The PHP backend is the control plane: it starts and stops the Python orchestrator, reads system metrics, checks
+              the local and remote LLM APIs, and manages the PHP-side storage used for orchestrator profiles, launcher files,
+              PID tracking, and metadata. The Python orchestrator is the execution engine: it runs the A/B loop, applies
+              guardrails, queries the LLM nodes through llama-server endpoints, and writes run outputs into the runs storage
+              path. The system block represents monitoring inputs used by the PHP backend, including /proc, /v1/models, and
+              health checks. The frontend never talks directly to the LLM nodes.
+            </div>
+          </div>
         </div>
       </section>
 
@@ -254,7 +263,7 @@ svg{display:block;width:100%;height:auto;min-width:720px}
           <article class="card cyan span-12"><div class="card-title">Polling Layer</div><div class="card-text">The frontend polls status.php and run-status.php every 5 seconds to refresh health data, run state, and transcript entries.</div></article>
           <article class="card amber span-12"><div class="card-title">Process Execution Layer</div><div class="card-text">run-start.php launches the Python orchestrator with nohup, then writes PID and launcher metadata used by subsequent status checks.</div></article>
           <article class="card amber span-12"><div class="card-title">LLM Exchange Layer</div><div class="card-text">The orchestrator alternates POST requests to each llama-server endpoint, applying prompt history rules and output constraints for every turn.</div></article>
-          <article class="card violet span-12"><div class="card-title">Persistence Layer</div><div class="card-text">Profiles, run folders, launcher files, stdout/stderr logs, and transcripts remain isolated in storage paths for traceability and replay.</div></article>
+          <article class="card violet span-12"><div class="card-title">Persistence Layer</div><div class="card-text">PHP storage keeps profiles and launcher metadata, while the Python orchestrator writes run folders and transcripts into the runs output path for traceability and replay.</div></article>
         </div>
       </section>
     </section>
@@ -271,7 +280,7 @@ svg{display:block;width:100%;height:auto;min-width:720px}
       </div>
     </section>
 
-  </main>
+   </main>
 </div>
 </body>
 </html>
