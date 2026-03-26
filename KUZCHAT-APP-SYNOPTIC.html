@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KUZCHAT-LLM-DUO - Synoptic (Architecture Diagram V3)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06101e;
+  --bg2:#08172e;
+  --panel:#081829;
+  --panel-2:#071520;
+  --panel-3:#0b1020;
+  --stroke:#17344c;
+  --stroke-2:#234a68;
+  --cyan:#7bf2ff;
+  --cyan-soft:#7aafcc;
+  --violet:#c19cff;
+  --amber:#ffc966;
+  --green:#67f3ba;
+  --coral:#ff9b7a;
+  --text:#d9ebf7;
+  --muted:#8ea8b8;
+  --micro:#4a7a9b;
+  --shadow:0 12px 34px rgba(0,0,0,.30);
+  --glow-cyan:0 0 0 1px rgba(123,242,255,.10),0 0 20px rgba(123,242,255,.08);
+  --glow-violet:0 0 0 1px rgba(193,156,255,.10),0 0 20px rgba(193,156,255,.08);
+  --glow-amber:0 0 0 1px rgba(255,201,102,.08),0 0 18px rgba(255,201,102,.06);
+}
+body{
+  background:
+    radial-gradient(circle at top left, rgba(123,242,255,.06), transparent 24%),
+    radial-gradient(circle at top right, rgba(193,156,255,.06), transparent 24%),
+    linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+  color:var(--text);
+  font-family:'Courier New',monospace;
+  min-height:100vh;
+  padding:20px;
+}
+.wrapper{max-width:1620px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}
+.header h1{color:var(--cyan);font-size:18px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px;font-weight:400}
+.header p{color:var(--micro);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.synoptic{display:flex;flex-direction:column;gap:16px}
+.top-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.flow-step{border:1px solid var(--stroke-2);background:linear-gradient(180deg,#081626 0%,#07111f 100%);border-radius:14px;padding:12px 14px;min-height:74px;box-shadow:var(--shadow);position:relative}
+.flow-step:not(:last-child)::after{content:"→";position:absolute;right:-8px;top:50%;transform:translateY(-50%);color:var(--cyan-soft);font-size:18px;z-index:2}
+.flow-kicker{color:var(--micro);font-size:9px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px}
+.flow-title{color:var(--cyan);font-size:11px;text-transform:uppercase;margin-bottom:6px}
+.flow-text{color:var(--muted);font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+.link-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:center}
+.rail-card{border:1px solid var(--stroke);background:rgba(8,20,34,.8);border-radius:12px;padding:10px 12px;min-height:58px;display:flex;flex-direction:column;gap:6px;justify-content:center}
+.rail-title{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan-soft)}
+.rail-text{font-size:9px;line-height:1.45;color:var(--muted)}
+.rail-card.http{border-color:#2a6080}
+.rail-card.poll{border-color:#2a6080;border-style:dashed}
+.rail-card.exec{border-color:#a07020}
+.rail-card.llm{border-color:#1a6a5a}
+.band{border:1px dashed var(--stroke);border-radius:16px;padding:14px;background:rgba(6,16,30,.34);box-shadow:var(--shadow)}
+.band.cyan{box-shadow:var(--shadow),var(--glow-cyan)}
+.band.violet{box-shadow:var(--shadow),var(--glow-violet)}
+.band.amber{box-shadow:var(--shadow),var(--glow-amber)}
+.band-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.band-title{color:var(--micro);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.band-note{color:var(--muted);font-size:10px;letter-spacing:.06em}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);border:1px solid var(--stroke-2);border-radius:12px;padding:14px;min-height:100px;display:flex;flex-direction:column;gap:8px;overflow:hidden;box-shadow:var(--shadow)}
+.card.cyan{border-color:#1a4a5a;box-shadow:var(--shadow),var(--glow-cyan)}
+.card.violet{border-color:#3a2a5a;background:linear-gradient(180deg,#0b0d1d 0%,#0a0b18 100%);box-shadow:var(--shadow),var(--glow-violet)}
+.card.amber{border-color:#5a4926;background:linear-gradient(180deg,#111018 0%,#0c0c13 100%);box-shadow:var(--shadow),var(--glow-amber)}
+.span-2{grid-column:span 2}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+.card-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);font-weight:700}
+.card.violet .card-title{color:var(--violet)}
+.card.amber .card-title{color:var(--amber)}
+.card-sub{font-size:10px;color:var(--cyan-soft);line-height:1.45}
+.card-text{font-size:10px;color:var(--muted);line-height:1.55;overflow-wrap:anywhere;word-break:break-word;white-space:normal}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.mini{border:1px solid #143047;background:#06101e;border-radius:8px;padding:10px;min-height:54px}
+.mini-label{font-size:9px;color:var(--micro);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+.mini-value{font-size:10px;color:var(--text);line-height:1.4;overflow-wrap:anywhere}
+.status-pill{display:inline-flex;align-items:center;gap:8px;width:max-content;max-width:100%;padding:8px 12px;border-radius:999px;border:1px solid #1b5c3a;background:#0a1f12;color:var(--green);font-size:10px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:1px solid #17344c;background:#08131f;color:var(--muted)}
+.badge.cyan{border-color:#1a4a5a;color:var(--cyan)}.badge.violet{border-color:#3a2a5a;color:var(--violet)}.badge.amber{border-color:#5a4926;color:var(--amber)}.badge.green{border-color:#1b5c3a;color:var(--green)}.badge.coral{border-color:#5a2a1a;color:var(--coral)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:0 0 auto}
+.transcript{display:grid;gap:10px}.msg{border:1px solid #17344c;background:#07111a;border-radius:10px;padding:10px}.msg.violet{border-color:#352050;background:#0b0915}
+.msg-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}.msg-name{font-size:10px;color:var(--cyan);text-transform:uppercase;font-weight:700}.msg.violet .msg-name{color:var(--violet)}.msg-time{font-size:9px;color:var(--micro)}.msg-body{font-size:10px;line-height:1.6;color:var(--text);overflow-wrap:anywhere}
+.arch-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+.svg-panel{border:1px solid var(--stroke);border-radius:14px;background:linear-gradient(180deg,#08131f 0%,#060d17 100%);padding:8px;overflow:auto}
+svg{display:block;width:100%;height:auto;min-width:720px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.legend-item{border:1px solid #10283b;border-radius:10px;padding:10px;background:#050d18;font-size:10px;color:var(--muted)}.legend-line{display:inline-block;width:44px;height:0;border-top:2px solid #2a6080;margin-right:8px;vertical-align:middle}.legend-line.dashed{border-top-style:dashed}.legend-line.amber{border-color:#a07020}.legend-line.green{border-color:#1a6a5a}.legend-line.violet{border-color:#404060}
+@media (max-width:1280px){.arch-grid{grid-template-columns:1fr}.span-2,.span-3,.span-4,.span-5,.span-6,.span-8{grid-column:span 6}.top-flow,.link-rail{grid-template-columns:repeat(2,minmax(0,1fr))}.flow-step:nth-child(2)::after{content:''}}
+@media (max-width:760px){body{padding:12px}.grid,.top-flow,.link-rail{grid-template-columns:1fr}.span-2,.span-3,.span-4,.span-5,.span-6,.span-8,.span-12{grid-column:span 1}.header h1{font-size:14px;letter-spacing:.12em}.flow-step::after{display:none}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header class="header">
+    <h1>KUZCHAT-LLM-DUO - Application Synoptic</h1>
+    <p>THE KUZ NETWORK · 2026 · Kusanagi8200</p>
+  </header>
+
+  <main class="synoptic">
+
+    <section class="top-flow">
+      <article class="flow-step"><div class="flow-kicker">Step 1</div><div class="flow-title">Frontend</div><div class="flow-text">Browser loads the console, polls state and transcript, and sends start or stop actions.</div></article>
+      <article class="flow-step"><div class="flow-kicker">Step 2</div><div class="flow-title">PHP Backend</div><div class="flow-text">PHP exposes API endpoints, validates profiles, launches the orchestrator, and aggregates runtime status.</div></article>
+      <article class="flow-step"><div class="flow-kicker">Step 3</div><div class="flow-title">Python Orchestrator</div><div class="flow-text">The loop alternates KUZAI and DARKAI turns, applies guardrails, and writes transcript artifacts.</div></article>
+      <article class="flow-step"><div class="flow-kicker">Step 4</div><div class="flow-title">Inference Nodes</div><div class="flow-text">llama-server on each node answers OpenAI-compatible chat requests over port 8080.</div></article>
+    </section>
+
+    <section class="link-rail">
+      <article class="rail-card http"><div class="rail-title">Frontend → Backend</div><div class="rail-text">GET /, form POST, profile CRUD, stop action</div></article>
+      <article class="rail-card poll"><div class="rail-title">Polling</div><div class="rail-text">status.php and run-status.php every 5 seconds</div></article>
+      <article class="rail-card exec"><div class="rail-title">Backend → Orchestrator</div><div class="rail-text">nohup exec, PID file, launcher metadata</div></article>
+      <article class="rail-card llm"><div class="rail-title">Orchestrator → Nodes</div><div class="rail-text">POST /v1/chat/completions alternated for KUZAI and DARKAI</div></article>
+    </section>
+
+    <section class="band cyan">
+      <div class="band-head">
+        <div class="band-title">Browser / Frontend</div>
+        <div class="band-note"></div>
+      </div>
+      <div class="grid">
+        <article class="card cyan span-3"><div class="card-title">Topbar</div><div class="card-sub">KUZCHAT LLM DUO · THE KUZ NETWORK · KUZAI.ORG</div><div class="status-pill"><span class="dot"></span>READY / DEGRADED</div><div class="badges"><span class="badge cyan">GET /</span><span class="badge green">online</span></div></article>
+        <article class="card cyan span-5"><div class="card-title">Hero Card</div><div class="card-sub">Duo orchestration console</div><div class="row"><div class="mini"><div class="mini-label">Engine</div><div class="mini-value">ONLINE / DEGRADED</div></div><div class="mini"><div class="mini-label">Web</div><div class="mini-value">ONLINE</div></div><div class="mini"><div class="mini-label">Updated</div><div class="mini-value">2026-03-25 14:32</div></div></div></article>
+        <article class="card cyan span-4"><div class="card-title">Infrastructure Snapshot</div><div class="row"><div class="mini"><div class="mini-label">KUZAI</div><div class="mini-value">fhc2 · 10.141.52.19 · HTTP 200 · 12 ms</div></div><div class="mini"><div class="mini-label">DARKAI</div><div class="mini-value">fhc · 10.141.52.126 · HTTP 200 · 8 ms</div></div></div></article>
+        <article class="card cyan span-6"><div class="card-title">Nodes Status</div><div class="row"><div class="mini"><div class="mini-label">Node A · KUZAI</div><div class="mini-value">Host: fhc2<br>API: :8080 /v1/chat/completions<br>Model: gemma-3-1b-it Q4_K_M</div></div><div class="mini"><div class="mini-label">Node B · DARKAI</div><div class="mini-value">Host: fhc<br>API: :8080 /v1/chat/completions<br>Model: granite-3.1-3b Q4_K_M</div></div></div></article>
+        <article class="card violet span-6"><div class="card-title">Orchestration Console</div><div class="card-sub">Profile editor · params · run control</div><div class="row"><div class="mini"><div class="mini-label">Profile</div><div class="mini-value">default / lab-01 / custom</div></div><div class="mini"><div class="mini-label">Turns</div><div class="mini-value">6</div></div><div class="mini"><div class="mini-label">Max chars</div><div class="mini-value">500</div></div><div class="mini"><div class="mini-label">History</div><div class="mini-value">3</div></div></div><div class="badges"><span class="badge violet">load</span><span class="badge violet">save</span><span class="badge green">start</span><span class="badge coral">stop</span><span class="badge cyan">reload</span></div></article>
+        <article class="card violet span-12"><div class="card-title">Live Transcript</div><div class="card-sub">Polling run-status.php every 5 seconds</div><div class="transcript"><div class="msg"><div class="msg-meta"><div class="msg-name">KUZAI</div><div class="msg-time">2026-03-25 14:32:09</div></div><div class="msg-body">I'm KUZAI, running on fhc2. My role is to propose coherent on-premise architectures.</div></div><div class="msg violet"><div class="msg-meta"><div class="msg-name">DARKAI</div><div class="msg-time">2026-03-25 14:32:18</div></div><div class="msg-body">I'm DARKAI, on fhc. I audit KUZAI's proposals and ensure zero cloud drift.</div></div><div class="msg"><div class="msg-meta"><div class="msg-name">KUZAI</div><div class="msg-time">2026-03-25 14:32:27</div></div><div class="msg-body">For log aggregation I propose Promtail + Loki with local retention and no external dependency.</div></div></div></article>
+      </div>
+    </section>
+
+    <section class="band cyan">
+      <div class="band-head"><div class="band-title">PHP Backend / Node A</div><div class="band-note">Apache 2 · PHP · 10.141.52.19:80</div></div>
+      <div class="grid">
+        <article class="card cyan span-4"><div class="card-title">public/index.php</div><div class="card-text">HTML shell · PHP resolves config at render · injects window.KUZCHAT_CONFIG</div><div class="badges"><span class="badge cyan">render</span><span class="badge cyan">bootstrap</span></div></article>
+        <article class="card cyan span-4"><div class="card-title">app/config.php</div><div class="card-text">Nodes · IPs · endpoints · paths · UI params · shared by all PHP files</div><div class="badges"><span class="badge cyan">shared config</span></div></article>
+        <article class="card amber span-4"><div class="card-title">Assets</div><div class="card-text">public/assets/js/app.js · polling · events · render<br>public/assets/css/style.css · dark neon-blue theme</div><div class="badges"><span class="badge amber">js</span><span class="badge amber">css</span></div></article>
+        <article class="card span-3"><div class="card-title">status.php</div><div class="card-text">Reads /proc/meminfo · /proc/uptime · /proc/loadavg · probes both /v1/models endpoints · returns JSON</div></article>
+        <article class="card span-3"><div class="card-title">run-start.php</div><div class="card-text">POST opening_prompt + orchestrator_name · validates paths · nohup exec · writes PID file</div></article>
+        <article class="card span-3 violet"><div class="card-title">run-stop.php</div><div class="card-text">POST · SIGTERM · optional SIGKILL · removes PID file · writes stopped state</div></article>
+        <article class="card span-3"><div class="card-title">run-status.php</div><div class="card-text">Checks /proc/PID · reads transcript.json · updates state machine · returns transcript entries</div></article>
+        <article class="card violet span-4"><div class="card-title">orchestrators-list.php</div><div class="card-text">GET · returns sorted profiles from storage/orchestrators/*.json</div></article>
+        <article class="card violet span-4"><div class="card-title">orchestrator-read.php</div><div class="card-text">GET ?name=slug · normalize + clamp fields · 404 if missing</div></article>
+        <article class="card violet span-4"><div class="card-title">orchestrator-save.php</div><div class="card-text">POST profile + save_as_name · sanitize slug · normalize fields · write JSON</div></article>
+        <article class="card amber span-4"><div class="card-title">storage/orchestrators/</div><div class="card-text">default.json · lab-01.json · custom profiles read/write by orchestrator APIs</div></article>
+        <article class="card amber span-4"><div class="card-title">storage/runs/</div><div class="card-text">run-ab-YYYYMMDD-HHMMSS · transcript.json · transcript.md written by Python orchestrator</div></article>
+        <article class="card amber span-4"><div class="card-title">storage/launcher/</div><div class="card-text">current_run.pid · current_run.json · stdout/stderr logs · liveness metadata</div></article>
+      </div>
+    </section>
+
+    <section class="band amber">
+      <div class="band-head"><div class="band-title">Python Orchestrator</div><div class="band-note">/opt/llm/orchestrator/duo_loop_engine.py · virtualenv</div></div>
+      <div class="grid">
+        <article class="card amber span-5"><div class="card-title">Core Loop</div><div class="card-text">Turn 1 → KUZAI: build_prompt(opening, history=[])<br>Turn 2 → DARKAI: build_prompt(opening, history[-3:])<br>Alternating loop for N turns with normalized outputs</div><div class="badges"><span class="badge amber">A/B loop</span><span class="badge amber">N turns</span></div></article>
+        <article class="card amber span-3"><div class="card-title">Constraints</div><div class="card-text">enforce_length() · max 4 sentences · 500 chars · strip_prefixes() · normalize_whitespace()</div></article>
+        <article class="card amber span-4"><div class="card-title">Outputs</div><div class="card-text">Writes to storage/runs/run-ab-*<br>transcript.json · transcript.md</div></article>
+        <article class="card span-4"><div class="card-title">CLI Parameters</div><div class="card-text">--turns 6 · --temperature-a 0.35 · --temperature-b 0.35 · --max-sentences 4 · --history-depth 3 · --max-chars 500</div></article>
+        <article class="card span-4"><div class="card-title">Social Mode</div><div class="card-text">Detects prompts like introduce yourself / who are you / what is your name → short mode, reduced meta-commentary</div></article>
+        <article class="card span-4"><div class="card-title">Guardrails</div><div class="card-text">100% local / on-prem scope · No cloud · No SaaS · No CDN · injected in every prompt</div></article>
+      </div>
+    </section>
+
+    <section class="band violet">
+      <div class="band-head"><div class="band-title">Inference Nodes</div><div class="band-note">LAN 10.141.52.0/24 · llama.cpp + CUDA</div></div>
+      <div class="grid">
+        <article class="card cyan span-6"><div class="card-title">Node A — fhc2 — KUZAI</div><div class="card-sub">10.141.52.19 · Intel i9 · 32 GB · NVIDIA RTX 5060 8 GB VRAM</div><div class="row"><div class="mini"><div class="mini-label">OS</div><div class="mini-value">Ubuntu 24.04</div></div><div class="mini"><div class="mini-label">CUDA</div><div class="mini-value">13.2</div></div><div class="mini"><div class="mini-label">Driver</div><div class="mini-value">nvidia-580 (hold)</div></div><div class="mini"><div class="mini-label">Kernel</div><div class="mini-value">6.17.0-19-generic</div></div></div><div class="card-text">llama-server-a.service · /opt/src/llama.cpp/build/bin/llama-server · host 0.0.0.0 · port 8080<br>Model: ggml-org/gemma-3-1b-it-GGUF:Q4_K_M · OpenAI-compatible API</div></article>
+        <article class="card violet span-6"><div class="card-title">Node B — fhc — DARKAI</div><div class="card-sub">10.141.52.126 · Intel i5 · 32 GB · NVIDIA RTX 3050 4 GB VRAM</div><div class="row"><div class="mini"><div class="mini-label">OS</div><div class="mini-value">Debian Linux</div></div><div class="mini"><div class="mini-label">CUDA</div><div class="mini-value">12.9</div></div><div class="mini"><div class="mini-label">Driver</div><div class="mini-value">nvidia-575 (hold)</div></div><div class="mini"><div class="mini-label">Build</div><div class="mini-value">b8357-89d0aec04</div></div></div><div class="card-text">llama-server-b.service · /opt/src/llama.cpp/build/bin/llama-server · host 0.0.0.0 · port 8080<br>Model: bartowski/granite-3.1-3b-a800m-instruct-Q4_K_M.gguf · OpenAI-compatible API</div></article>
+        <article class="card span-6"><div class="card-title">Systemd Services</div><div class="card-text">/etc/systemd/system/llama-server-a.service → Node A / KUZAI<br>/etc/systemd/system/llama-server-b.service → Node B / DARKAI</div></article>
+        <article class="card span-6"><div class="card-title">Filesystem</div><div class="card-text">/opt/src/llama.cpp/build/bin/llama-server · inference binary<br>/opt/llm/models/ · GGUF files<br>/opt/llm/orchestrator/venv/ · Python virtualenv<br>/usr/local/cuda/ · /etc/profile.d/cuda.sh · CUDA + PATH</div></article>
+      </div>
+    </section>
+
+    <section class="arch-grid">
+      <section class="band cyan">
+        <div class="band-head"><div class="band-title">Architecture Flow Diagram</div><div class="band-note"></div></div>
+        <div class="svg-panel">
+          <svg viewBox="0 0 980 520" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#2a6080" stroke-width="1.6"/></marker>
+              <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#a07020" stroke-width="1.6"/></marker>
+              <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#1a6a5a" stroke-width="1.6"/></marker>
+            </defs>
+
+            <!-- FRONTEND -->
+            <rect x="20" y="30" width="180" height="110" rx="12" fill="#081829" stroke="#1a4a5a"/>
+            <text x="35" y="55" fill="#7bf2ff" font-size="13">FRONTEND</text>
+            <text x="35" y="75" fill="#8ea8b8" font-size="10">Browser UI</text>
+            <text x="35" y="92" fill="#8ea8b8" font-size="10">Editor / Run</text>
+            <text x="35" y="109" fill="#8ea8b8" font-size="10">Polling 5s</text>
+
+            <!-- BACKEND -->
+            <rect x="260" y="30" width="220" height="130" rx="12" fill="#081829" stroke="#1a4a5a"/>
+            <text x="275" y="55" fill="#7bf2ff" font-size="13">PHP BACKEND</text>
+            <text x="275" y="75" fill="#8ea8b8" font-size="10">index.php / config.php</text>
+            <text x="275" y="92" fill="#8ea8b8" font-size="10">run-start / run-stop</text>
+            <text x="275" y="109" fill="#8ea8b8" font-size="10">status / run-status</text>
+            <text x="275" y="126" fill="#8ea8b8" font-size="10">orchestrator APIs</text>
+
+            <!-- ORCHESTRATOR -->
+            <rect x="530" y="30" width="200" height="130" rx="12" fill="#111018" stroke="#5a4926"/>
+            <text x="545" y="55" fill="#ffc966" font-size="13">ORCHESTRATOR</text>
+            <text x="545" y="75" fill="#8ea8b8" font-size="10">duo_loop_engine.py</text>
+            <text x="545" y="92" fill="#8ea8b8" font-size="10">A/B loop</text>
+            <text x="545" y="109" fill="#8ea8b8" font-size="10">guardrails</text>
+            <text x="545" y="126" fill="#8ea8b8" font-size="10">transcripts</text>
+
+            <!-- NODES -->
+            <rect x="780" y="30" width="170" height="130" rx="12" fill="#0b0d1d" stroke="#3a2a5a"/>
+            <text x="795" y="55" fill="#c19cff" font-size="13">LLM NODES</text>
+            <text x="795" y="75" fill="#8ea8b8" font-size="10">KUZAI / DARKAI</text>
+            <text x="795" y="92" fill="#8ea8b8" font-size="10">llama-server</text>
+            <text x="795" y="109" fill="#8ea8b8" font-size="10">:8080 API</text>
+
+            <!-- STORAGE -->
+            <rect x="260" y="230" width="220" height="110" rx="12" fill="#111018" stroke="#5a4926"/>
+            <text x="275" y="255" fill="#ffc966" font-size="13">STORAGE</text>
+            <text x="275" y="275" fill="#8ea8b8" font-size="10">orchestrators/</text>
+            <text x="275" y="292" fill="#8ea8b8" font-size="10">runs/</text>
+            <text x="275" y="309" fill="#8ea8b8" font-size="10">launcher/</text>
+
+            <!-- SYSTEM -->
+            <rect x="780" y="230" width="170" height="110" rx="12" fill="#081829" stroke="#1a4a5a"/>
+            <text x="795" y="255" fill="#7bf2ff" font-size="13">SYSTEM</text>
+            <text x="795" y="275" fill="#8ea8b8" font-size="10">/proc</text>
+            <text x="795" y="292" fill="#8ea8b8" font-size="10">/v1/models</text>
+            <text x="795" y="309" fill="#8ea8b8" font-size="10">health</text>
+
+            <!-- CLEAN FLOWS -->
+            <path d="M200 80 L260 80" stroke="#2a6080" stroke-width="2" marker-end="url(#arrCyan)"/>
+            <path d="M480 80 L530 80" stroke="#a07020" stroke-width="2" marker-end="url(#arrAmber)"/>
+            <path d="M730 80 L780 80" stroke="#1a6a5a" stroke-width="2" marker-end="url(#arrGreen)"/>
+
+            <!-- VERTICAL FLOWS -->
+            <path d="M630 160 L630 230" stroke="#1a6a5a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrGreen)"/>
+            <path d="M480 285 L780 285" stroke="#2a6080" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrCyan)"/>
+
+            <!-- LABELS CLEAN -->
+            <text x="210" y="70" fill="#4a7a9b" font-size="9">HTTP</text>
+            <text x="500" y="70" fill="#4a7a9b" font-size="9">EXEC</text>
+            <text x="740" y="70" fill="#4a7a9b" font-size="9">LLM</text>
+            <text x="640" y="200" fill="#4a7a9b" font-size="9">WRITE</text>
+            <text x="560" y="275" fill="#4a7a9b" font-size="9">STATUS</text>
+
+          </svg>
+        </div>
+      </section>
+
+      <section class="band violet">
+        <div class="band-head"><div class="band-title">Execution Notes</div><div class="band-note"></div></div>
+        <div class="grid">
+          <article class="card cyan span-12"><div class="card-title">HTTP Sync Layer</div><div class="card-text">Initial page load, profile read/save, start and stop actions are synchronous exchanges between browser and PHP.</div></article>
+          <article class="card cyan span-12"><div class="card-title">Polling Layer</div><div class="card-text">The frontend polls status.php and run-status.php every 5 seconds to refresh health data, run state, and transcript entries.</div></article>
+          <article class="card amber span-12"><div class="card-title">Process Execution Layer</div><div class="card-text">run-start.php launches the Python orchestrator with nohup, then writes PID and launcher metadata used by subsequent status checks.</div></article>
+          <article class="card amber span-12"><div class="card-title">LLM Exchange Layer</div><div class="card-text">The orchestrator alternates POST requests to each llama-server endpoint, applying prompt history rules and output constraints for every turn.</div></article>
+          <article class="card violet span-12"><div class="card-title">Persistence Layer</div><div class="card-text">Profiles, run folders, launcher files, stdout/stderr logs, and transcripts remain isolated in storage paths for traceability and replay.</div></article>
+        </div>
+      </section>
+    </section>
+
+    <section class="band">
+      <div class="band-head"><div class="band-title">Legend</div><div class="band-note"></div></div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-line"></span>HTTP request / sync exchange</div>
+        <div class="legend-item"><span class="legend-line dashed"></span>Polling / async fetch every 5 s</div>
+        <div class="legend-item"><span class="legend-line amber"></span>Process launch / nohup exec</div>
+        <div class="legend-item"><span class="legend-line green"></span>LLM inference POST /v1/chat/completions</div>
+        <div class="legend-item"><span class="legend-line dashed green"></span>Storage read / write</div>
+        <div class="legend-item"><span class="legend-line violet"></span>State / loop relation</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
