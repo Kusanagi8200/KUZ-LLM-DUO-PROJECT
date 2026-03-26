@@ -5,15 +5,14 @@
 ---
 ####  ``CONTROL CONSOLE WEB APP``
 
-Two local open-source LLMs running on two separate physical machines, communicating in an automated A/B loop driven by a central Python orchestrator. 
-Control interface served by PHP/Apache on the main node. 
+Two local open-source LLMs running on two separate physical machines, communicating in an automated A/B loop driven by a central Python orchestrator. Control interface served by PHP/Apache on the main node. 
 
 ---
 #### ``INFRASTRUCTURE``
 
 #### ``Node A - fhc2 - KUZAI``
 
-Node A is the main machine of the lab. It runs the KUZAI inference service, the Python orchestrator, and the PHP web application. 
+Node A is the main machine of the lab. It runs the KUZAI inference service, the Python orchestrator, and the PHP web application.  
 All control logic originates from this node.
 
 
@@ -52,7 +51,8 @@ The following steps cover the full deployment of Node B from a clean system stat
 
 #### ``INITIAL HARDWARE AUDIT``
 
-Before any installation, a complete hardware audit is performed to confirm the machine identity, available resources, GPU presence, and network state. This baseline also checks whether NVIDIA drivers and CUDA are already present.
+Before any installation, a complete hardware audit is performed to confirm the machine identity, available resources, GPU presence, and network state.  
+This baseline also checks whether NVIDIA drivers and CUDA are already present.
 
 
 ```bash
@@ -92,7 +92,8 @@ lsmod | egrep 'nvidia|nouveau' || true
 ---
 #### ``INSTALL SYSTEM DEPENDENCIES``
 
-Installs all build tools and libraries required to compile llama.cpp from source. This includes CMake, Ninja, Git, OpenSSL development headers, and the Python 3 toolchain for the orchestrator virtualenv.
+Installs all build tools and libraries required to compile llama.cpp from source.  
+This includes CMake, Ninja, Git, OpenSSL development headers, and the Python 3 toolchain for the orchestrator virtualenv.
 
 
 ```bash
@@ -117,7 +118,8 @@ apt install -y \
 ---
 #### ``PIN NVIDIA DRIVER VERSION``
 
-The NVIDIA driver version is pinned to prevent automatic upgrades during system updates. An unexpected driver change could break CUDA compatibility and take the inference service offline.
+The NVIDIA driver version is pinned to prevent automatic upgrades during system updates.  
+An unexpected driver change could break CUDA compatibility and take the inference service offline.
 
 
 ```bash
@@ -130,7 +132,8 @@ apt-mark hold \
 ---
 #### ``ADD CUDA REPOSITORY``
 
-Adds the official NVIDIA CUDA package repository for Ubuntu 22.04. The keyring and pinning file are installed first to ensure authenticated and prioritized package resolution.
+Adds the official NVIDIA CUDA package repository for Ubuntu 22.04.  
+The keyring and pinning file are installed first to ensure authenticated and prioritized package resolution.
 
 
 ```bash
@@ -150,7 +153,8 @@ apt update
 ---
 #### ``CHECK AVAILABLE CUDA CANDIDATES``
 
-Verifies which CUDA toolkit versions are available in the repository before installing. This step confirms the repository is correctly configured and the target version is resolvable.
+Verifies which CUDA toolkit versions are available in the repository before installing.  
+This step confirms the repository is correctly configured and the target version is resolvable.
 
 
 ```bash
@@ -200,7 +204,8 @@ echo $PATH
 ---
 #### ``CREATE WORKING DIRECTORIES``
 
-Creates the directory tree used by llama.cpp, the model storage, the orchestrator, and the service logs. These paths are referenced by the systemd unit and all Python scripts.
+Creates the directory tree used by llama.cpp, the model storage, the orchestrator, and the service logs.  
+These paths are referenced by the systemd unit and all Python scripts.
 
 
 ```bash
@@ -213,7 +218,8 @@ mkdir -p /var/log/llm-duo
 ---
 #### ``BUILD LLAMA.CPP WITH CUDA``
 
-Clones the llama.cpp repository and compiles it from source with CUDA acceleration enabled. The flag `DGGML_CUDA=ON` activates GPU offloading. The build uses all available CPU cores via `nproc`.
+Clones the llama.cpp repository and compiles it from source with CUDA acceleration enabled.  
+The flag `DGGML_CUDA=ON` activates GPU offloading. The build uses all available CPU cores via `nproc`.
 
 
 ```bash
@@ -230,7 +236,8 @@ cmake --build build --config Release -j"$(nproc)"
 ---
 #### ``VERIFY BINARIES``
 
-Lists the produced binaries and checks that the compiled `llama-cli` binary is dynamically linked against the expected CUDA and cuBLAS libraries. A missing CUDA link means the build did not use GPU support.
+Lists the produced binaries and checks that the compiled `llama-cli` binary is dynamically linked against the expected CUDA and cuBLAS libraries.  
+A missing CUDA link means the build did not use GPU support.
 
 
 ```bash
@@ -240,7 +247,8 @@ ldd build/bin/llama-cli | egrep 'cuda|cublas|cudart|stdc\+\+|libm|libpthread' ||
 
 #### ``CLI MODEL TEST``
 
-Runs a direct interactive test of the model via the CLI binary to confirm that the GPU is correctly used for inference and that the model loads without errors. The token throughput is noted here for reference.
+Runs a direct interactive test of the model via the CLI binary to confirm that the GPU is correctly used for inference and that the model loads without errors.  
+The token throughput is noted here for reference.
 
 
 ```bash
@@ -340,7 +348,7 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
 
 #### ``MONITORING SCRIPTS``
 
-Two dedicated shell scripts provide a full audit of each node. 
+Two dedicated shell scripts provide a full audit of each node.  
 They cover system identity, GPU state, llama.cpp binaries, loaded models, service status, and a live API test. Run them to verify the state of any node at any time.
 
 #### ``MONITOR-FHC.sh - Node B audit (DARKAI)``
@@ -463,7 +471,8 @@ Output --> `/opt/llm/orchestrator/runs/run-ab-YYYYMMDD-HHMMSS/`
 
 #### ``CLI PARAMETERS``
 
-All parameters have sensible defaults. The only required argument is `--opening-prompt`. Temperature and length caps can be tuned independently for each model.
+All parameters have sensible defaults. The only required argument is `--opening-prompt`.  
+Temperature and length caps can be tuned independently for each model.
 
 | Parameter | Default | Description |
 |---|---|---|
@@ -515,7 +524,8 @@ You are DARKAI.
 
 #### ``LOOP LOGIC``
 
-The orchestrator alternates turns between KUZAI and DARKAI. Each turn rebuilds a prompt from the opening prompt, the last N turns of history, and the previous message. 
+The orchestrator alternates turns between KUZAI and DARKAI.  
+Each turn rebuilds a prompt from the opening prompt, the last N turns of history, and the previous message. 
 Responses are trimmed by `enforce_length()` before being stored and displayed.
 
 
@@ -540,7 +550,8 @@ Per-response processing -->
 ---
 #### ``EXEMPLE LAUNCH COMMAND``
 
-Typical production launch using the default Node A and B endpoints. The orchestrator saves both a JSON and a Markdown transcript in a timestamped run directory.
+Typical production launch using the default Node A and B endpoints.  
+The orchestrator saves both a JSON and a Markdown transcript in a timestamped run directory.
 
 
 ```bash
@@ -577,7 +588,8 @@ Output -->
 
 #### ``PROJECT GUARDRAILS (duo_loop_ab.py v1)``
 
-Mandatory constraints injected into every prompt in the first version of the orchestrator. They enforce the 100% local and on-premise scope and prevent the models from drifting toward cloud or SaaS-based proposals.
+Mandatory constraints injected into every prompt in the first version of the orchestrator.  
+They enforce the 100% local and on-premise scope and prevent the models from drifting toward cloud or SaaS-based proposals.
 
 
 ```
@@ -597,7 +609,8 @@ MANDATORY PROJECT CONSTRAINTS:
 
 #### ``PHP WEB APPLICATION - KUZCHAT-LLM-DUO``
 
-KUZCHAT-LLM-DUO is the web control console for the project. It runs on Node A under Apache and provides a browser-based interface to configure orchestrator profiles, launch and stop runs, monitor both LLM nodes, and read live transcripts.
+KUZCHAT-LLM-DUO is the web control console for the project.  
+It runs on Node A under Apache and provides a browser-based interface to configure orchestrator profiles, launch and stop runs, monitor both LLM nodes, and read live transcripts.
 
 #### ``APACHE CONFIGURATION``
 
@@ -623,7 +636,8 @@ The VirtualHost serves the application on port 80 from `/var/www/html/KUZCHAT-LL
 ---
 #### ``DIRECTORY STRUCTURE``
 
-The application separates public web assets from backend logic and persistent storage. The `api/` directory contains all PHP endpoints called by the frontend via `fetch()`. The `storage/` directory holds orchestrator profiles, run transcripts, and the active PID file.
+The application separates public web assets from backend logic and persistent storage. The `api/` directory contains all PHP endpoints called by the frontend via `fetch()`.  
+The `storage/` directory holds orchestrator profiles, run transcripts, and the active PID file.
 
 
 ```
@@ -654,7 +668,8 @@ public/api/
 ---
 #### ``FEATURES``
 
-The application provides a complete control surface for the lab. The PHP backend communicates with the Python orchestrator via `exec()` and monitors the node APIs via `curl`. All state is maintained in flat files under `storage/`.
+The application provides a complete control surface for the lab. The PHP backend communicates with the Python orchestrator via `exec()` and monitors the node APIs via `curl`.  
+All state is maintained in flat files under `storage/`.
 
 
 - **Session launch**: web form → parameters → `exec()` PHP to `ORCHESTRATOR-02.py`
@@ -669,7 +684,7 @@ The application provides a complete control surface for the lab. The PHP backend
 
 Single source of truth for the entire application. Loaded by every PHP file via `require`. Defines node IPs and endpoints, UI parameters, and all paths used by the orchestrator launcher.
 
-Central configuration — nodes, paths, UI settings.
+Central configuration - nodes, paths, UI settings.
 
 ```php
 <?php
@@ -727,7 +742,7 @@ return [
 
 Single-page HTML shell served on every request. PHP resolves all config values at render time and injects them into `window.KUZCHAT_CONFIG` so the JavaScript frontend can consume them without additional API calls.
 
-HTML shell — loads config, renders all UI panels, injects JS config.
+HTML shell - loads config, renders all UI panels, injects JS config.
 
 ```php
 <?php
@@ -976,7 +991,8 @@ function e(string $value): string
 ---
 #### ``public/api/status.php``
 
-Called every 5 seconds by the frontend. Reads local system metrics from `/proc` and polls both node APIs via `curl`. Returns a unified JSON payload covering system health, node reachability, loaded model names, and latency.
+Called every 5 seconds by the frontend. Reads local system metrics from `/proc` and polls both node APIs via `curl`.  
+Returns a unified JSON payload covering system health, node reachability, loaded model names, and latency.
 
 Reads system metrics (`/proc/meminfo`, `/proc/uptime`, `/proc/loadavg`) and polls both node APIs via `curl`. Returns a unified JSON payload to the frontend.
 
@@ -1436,6 +1452,7 @@ echo json_encode([
 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
+
 #### ``public/api/run-stop.php``
 
 Sends `SIGTERM` to the active PID and waits 300 ms. If the process is still alive, sends `SIGKILL`. Cleans up the PID file and updates the meta file with a `stopped` status and stop timestamp.
@@ -1554,6 +1571,7 @@ echo json_encode(['ok' => true, 'items' => $items, 'count' => count($items)],
     JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
+
 #### ``public/api/orchestrator-read.php``
 
 Loads a single orchestrator profile by slug from `storage/orchestrators/`. All fields are normalized and clamped to valid ranges before being returned. Returns 404 if the slug does not match any file.
@@ -1640,6 +1658,7 @@ echo json_encode(['ok' => true, 'profile' => normalizeProfile($decoded, $slug)],
     JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
+
 #### ``public/api/orchestrator-save.php``
 
 Writes or overwrites an orchestrator profile JSON file in `storage/orchestrators/`. The slug is derived from the profile name by sanitization. All numeric fields are clamped to defined min/max ranges on write.
@@ -1742,6 +1761,7 @@ echo json_encode(['ok' => true, 'message' => 'Orchestrator saved', 'slug' => $sl
     JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
+
 #### ``public/assets/js/app.js``
 
 Self-contained IIFE, no framework. Initializes on page load, binds all button events, and starts a polling loop calling `status.php` and `run-status.php` every 5 seconds. Handles the full profile load/save/save-as cycle and renders transcript entries into the live panel.
@@ -2130,9 +2150,11 @@ Frontend controller — IIFE, no framework. Polls `status.php` and `run-status.p
 })();
 ```
 ---
+
 #### ``public/assets/css/style.css``
 
-Dark neon-blue theme built entirely with CSS custom properties. No framework dependency. Color ramps, border styles, and component states are all defined on `:root` and applied consistently across node cards, run state badges, and transcript message cards.
+Dark neon-blue theme built entirely with CSS custom properties. No framework dependency.  
+Color ramps, border styles, and component states are all defined on `:root` and applied consistently across node cards, run state badges, and transcript message cards.
 
 Dark neon-blue theme. CSS custom properties on `:root`. No framework dependency.
 
@@ -2221,7 +2243,8 @@ html, body { margin: 0; padding: 0; min-height: 100%;
 
 #### ``SYSTEM DIRECTORY LAYOUT``
 
-Complete reference of all paths used by the project across both nodes. Covers llama.cpp binaries, model files, orchestrator scripts, web application files, persistent storage, systemd services, and CUDA installation.
+Complete reference of all paths used by the project across both nodes.  
+Covers llama.cpp binaries, model files, orchestrator scripts, web application files, persistent storage, systemd services, and CUDA installation.
 
 
 ```
@@ -2257,7 +2280,8 @@ Complete reference of all paths used by the project across both nodes. Covers ll
 ---
 #### ``DEPLOYED MODEL``
 
-Two distinct models are deployed, one per node. The model choice on each node is constrained by available VRAM. Both use Q4_K_M quantization which offers a good balance between inference speed and output quality on consumer-grade GPUs.
+Two distinct models are deployed, one per node.  
+The model choice on each node is constrained by available VRAM. Both use Q4_K_M quantization which offers a good balance between inference speed and output quality on consumer-grade GPUs.
 
 
 | Parameter | Value |
