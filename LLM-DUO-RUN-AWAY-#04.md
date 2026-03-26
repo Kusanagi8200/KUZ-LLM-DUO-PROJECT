@@ -5,14 +5,16 @@
 ---
 ####  ``CONTROL CONSOLE WEB APP``
 
-Two local open-source LLMs running on two separate physical machines, communicating in an automated A/B loop driven by a central Python orchestrator. Control interface served by PHP/Apache on the main node. 
+Two local open-source LLMs running on two separate physical machines, communicating in an automated A/B loop driven by a central Python orchestrator. 
+Control interface served by PHP/Apache on the main node. 
 
 ---
 #### ``INFRASTRUCTURE``
 
-#### Node A - fhc2 - KUZAI
+#### ``Node A - fhc2 - KUZAI``
 
-Node A is the main machine of the lab. It runs the KUZAI inference service, the Python orchestrator, and the PHP web application. All control logic originates from this node.
+Node A is the main machine of the lab. It runs the KUZAI inference service, the Python orchestrator, and the PHP web application. 
+All control logic originates from this node.
 
 
 | Parameter | Value |
@@ -236,7 +238,7 @@ ls -1 build/bin | grep '^llama-'
 ldd build/bin/llama-cli | egrep 'cuda|cublas|cudart|stdc\+\+|libm|libpthread' || true
 ```
 
-#### CLI MODEL TEST
+#### ``CLI MODEL TEST``
 
 Runs a direct interactive test of the model via the CLI binary to confirm that the GPU is correctly used for inference and that the model loads without errors. The token throughput is noted here for reference.
 
@@ -247,16 +249,18 @@ cd /opt/src/llama.cpp
   -hf bartowski/granite-3.1-3b-a800m-instruct-GGUF:granite-3.1-3b-a800m-instruct-Q4_K_M.gguf
 ```
 
-Validation output -->
+``Validation output -->``
+
 ```
 build : b8357-89d0aec04
 model : bartowski/granite-3.1-3b-a800m-instruct-GGUF
 Prompt: 307.4 t/s | Generation: 136.1 t/s
 ```
 ---
-#### DEPLOY MODEL FILE
+#### ``DEPLOY MODEL FILE``
 
-Creates a dedicated system user `llm` with no login shell, copies the downloaded model file into `/opt/llm/models/`, and sets ownership. The inference service will run under this user for isolation.
+Creates a dedicated system user `llm` with no login shell, copies the downloaded model file into `/opt/llm/models/`, and sets ownership. 
+The inference service will run under this user for isolation.
 
 
 ```bash
@@ -270,9 +274,10 @@ chown -R llm:llm /var/log/llm-duo
 ls -lh /opt/llm/models
 ```
 ---
-#### SYSTEMD SERVICE - Node B (DARKAI)
+#### ``SYSTEMD SERVICE - Node B (DARKAI)``
 
-Defines and enables the `llama-server-b.service` unit. The service runs as the `llm` user, sets the CUDA environment, and starts `llama-server` bound to all interfaces on port 8080. It restarts automatically on failure.
+Defines and enables the `llama-server-b.service` unit. The service runs as the `llm` user, sets the CUDA environment, and starts `llama-server` bound to all interfaces on port 8080. 
+It restarts automatically on failure.
 
 
 ```bash
@@ -312,7 +317,7 @@ systemctl status llama-server-b.service --no-pager -l
 ss -ltnp | grep 8080
 ```
 
-#### LOCAL API TEST - Node B
+#### ``LOCAL API TEST - Node B``
 
 Verifies the inference API is reachable locally. First checks the model list endpoint, then sends a chat completion request and validates that the model returns a coherent response.
 
@@ -329,15 +334,16 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
   }' | jq -r '.choices[0].message.content'
 ```
 
-Output --> `"Yes, node B is running locally."`
+``Output -->`` `"Yes, node B is running locally."`
 
 ---
 
-#### MONITORING SCRIPTS
+#### ``MONITORING SCRIPTS``
 
-Two dedicated shell scripts provide a full audit of each node. They cover system identity, GPU state, llama.cpp binaries, loaded models, service status, and a live API test. Run them to verify the state of any node at any time.
+Two dedicated shell scripts provide a full audit of each node. 
+They cover system identity, GPU state, llama.cpp binaries, loaded models, service status, and a live API test. Run them to verify the state of any node at any time.
 
-#### MONITOR-FHC.sh - Node B audit (DARKAI)
+#### ``MONITOR-FHC.sh - Node B audit (DARKAI)``
 
 Full audit script for Node B (fhc). Covers OS identity, network, GPU and CUDA state, llama.cpp binaries, model files, DARKAI service status, and a local API inference test.
 
@@ -383,9 +389,9 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
   }' | jq -r '.choices[0].message.content'
 ```
 ---
-#### MONITOR-FHC2.sh - Node A audit (KUZAI)
+#### ``MONITOR-FHC2.sh - Node A audit (KUZAI)``
 
-Full audit script for Node A (fhc2). Same coverage as the Node B script, with the addition of a connectivity test toward Node B and a check of the Python orchestrator virtualenv.
+Full audit script for Node A (fhc2). Same coverage as the Node B script, with the addition of a connectivity test toward Node B and a check of the Python orchestrator virtual env.
 
 
 ```bash
@@ -436,16 +442,18 @@ ls -ld /opt/llm/orchestrator /opt/llm/orchestrator/venv 2>/dev/null || true
 
 ---
 
-#### PYTHON ORCHESTRATOR
+#### ``PYTHON ORCHESTRATOR``
 
-The orchestrator is the central control process. It runs on Node A, manages the A/B dialogue loop between the two models, handles context reconstruction, enforces output length, and writes transcripts. ORCHESTRATOR-02.py is the production version with Node A and B IPs set as defaults.
+The orchestrator is the central control process. It runs on Node A, manages the A/B dialogue loop between the two models, handles context reconstruction, 
+enforces output length, and writes transcripts. ORCHESTRATOR-02.py is the production version with Node A and B IPs set as defaults.
 
-#### ORCHESTRATOR-02.py - Production version
+#### ``ORCHESTRATOR-02.py - Production version``
 
-Production orchestrator with the fhc2 and fhc endpoints hardcoded as defaults. All run parameters are configurable via CLI flags. Output is written to a timestamped directory under `/opt/llm/orchestrator/runs/`.
+Production orchestrator with the fhc2 and fhc endpoints hardcoded as defaults. 
+All run parameters are configurable via CLI flags. Output is written to a timestamped directory under `/opt/llm/orchestrator/runs/`.
 
 
-Interpreter --> `/opt/llm/orchestrator/venv/bin/python3`
+``Interpreter -->`` `/opt/llm/orchestrator/venv/bin/python3`
 
 Default URLs:
 - Node A: `http://10.141.52.19:8080/v1/chat/completions`
@@ -453,7 +461,7 @@ Default URLs:
 
 Output --> `/opt/llm/orchestrator/runs/run-ab-YYYYMMDD-HHMMSS/`
 
-#### CLI PARAMETERS
+#### ``CLI PARAMETERS``
 
 All parameters have sensible defaults. The only required argument is `--opening-prompt`. Temperature and length caps can be tuned independently for each model.
 
@@ -474,12 +482,13 @@ All parameters have sensible defaults. The only required argument is `--opening-
 | `--output-dir` | `/opt/llm/orchestrator/runs` | Output directory |
 
 ---
-#### MODEL SYSTEM PROMPT
+#### ``MODEL SYSTEM PROMPT``
 
-Each model receives a system prompt injected at the start of every turn. These prompts define the identity, role, and output style of each agent. They are kept minimal to avoid over-constraining the models.
+Each model receives a system prompt injected at the start of every turn. 
+These prompts define the identity, role, and output style of each agent. They are kept minimal to avoid over-constraining the models.
 
 
-**KUZAI (Node A):**
+**``KUZAI (Node A)``**
 ```
 You are KUZAI.
 - Your visible name is KUZAI.
@@ -491,7 +500,7 @@ You are KUZAI.
 - Output only the reply itself.
 ```
 
-**DARKAI (Node B):**
+**``DARKAI (Node B)``**
 ```
 You are DARKAI.
 - Your visible name is DARKAI.
@@ -504,9 +513,10 @@ You are DARKAI.
 ```
 --- 
 
-#### LOOP LOGIC
+#### ``LOOP LOGIC``
 
-The orchestrator alternates turns between KUZAI and DARKAI. Each turn rebuilds a prompt from the opening prompt, the last N turns of history, and the previous message. Responses are trimmed by `enforce_length()` before being stored and displayed.
+The orchestrator alternates turns between KUZAI and DARKAI. Each turn rebuilds a prompt from the opening prompt, the last N turns of history, and the previous message. 
+Responses are trimmed by `enforce_length()` before being stored and displayed.
 
 
 ```
@@ -528,7 +538,7 @@ Per-response processing -->
 ``Social mode detection -->`` If the prompt contains `introduce yourself`, `who are you`, `what is your name`, etc. → short mode activated, no meta-commentary.
 
 ---
-#### EXEMPLE LAUNCH COMMAND
+#### ``EXEMPLE LAUNCH COMMAND``
 
 Typical production launch using the default Node A and B endpoints. The orchestrator saves both a JSON and a Markdown transcript in a timestamped run directory.
 
@@ -544,7 +554,7 @@ Typical production launch using the default Node A and B endpoints. The orchestr
   --history-depth 3
 ```
 ---
-#### FIRST VALIDATED DIALOGUE TEST
+#### ``FIRST VALIDATED DIALOGUE TEST``
 
 First successful inter-node dialogue test, using the social intro prompt to confirm that each model correctly identifies itself and stays within its assigned role.
 
@@ -565,7 +575,7 @@ Output -->
 
 ---
 
-#### PROJECT GUARDRAILS (duo_loop_ab.py v1)
+#### ``PROJECT GUARDRAILS (duo_loop_ab.py v1)``
 
 Mandatory constraints injected into every prompt in the first version of the orchestrator. They enforce the 100% local and on-premise scope and prevent the models from drifting toward cloud or SaaS-based proposals.
 
@@ -585,11 +595,11 @@ MANDATORY PROJECT CONSTRAINTS:
 
 ---
 
-#### PHP WEB APPLICATION - KUZCHAT-LLM-DUO
+#### ``PHP WEB APPLICATION - KUZCHAT-LLM-DUO``
 
 KUZCHAT-LLM-DUO is the web control console for the project. It runs on Node A under Apache and provides a browser-based interface to configure orchestrator profiles, launch and stop runs, monitor both LLM nodes, and read live transcripts.
 
-#### APACHE CONFIGURATION
+#### ``APACHE CONFIGURATION``
 
 The VirtualHost serves the application on port 80 from `/var/www/html/KUZCHAT-LLM-DUO/public`. `AllowOverride All` enables `.htaccess` routing. The entry point is `index.php`.
 
@@ -611,7 +621,7 @@ The VirtualHost serves the application on port 80 from `/var/www/html/KUZCHAT-LL
 </VirtualHost>
 ```
 ---
-#### DIRECTORY STRUCTURE
+#### ``DIRECTORY STRUCTURE``
 
 The application separates public web assets from backend logic and persistent storage. The `api/` directory contains all PHP endpoints called by the frontend via `fetch()`. The `storage/` directory holds orchestrator profiles, run transcripts, and the active PID file.
 
@@ -642,7 +652,7 @@ public/api/
 └── orchestrator-save.php             create or update a profile
 ```
 ---
-#### FEATURES
+#### ``FEATURES``
 
 The application provides a complete control surface for the lab. The PHP backend communicates with the Python orchestrator via `exec()` and monitors the node APIs via `curl`. All state is maintained in flat files under `storage/`.
 
@@ -655,7 +665,7 @@ The application provides a complete control surface for the lab. The PHP backend
 
 ---
 
-#### app/config.php
+#### ``app/config.php``
 
 Single source of truth for the entire application. Loaded by every PHP file via `require`. Defines node IPs and endpoints, UI parameters, and all paths used by the orchestrator launcher.
 
@@ -713,7 +723,7 @@ return [
 ];
 ```
 ---
-#### public/index.php
+#### ``public/index.php``
 
 Single-page HTML shell served on every request. PHP resolves all config values at render time and injects them into `window.KUZCHAT_CONFIG` so the JavaScript frontend can consume them without additional API calls.
 
@@ -964,7 +974,7 @@ function e(string $value): string
 </html>
 ```
 ---
-#### public/api/status.php
+#### ``public/api/status.php``
 
 Called every 5 seconds by the frontend. Reads local system metrics from `/proc` and polls both node APIs via `curl`. Returns a unified JSON payload covering system health, node reachability, loaded model names, and latency.
 
@@ -1143,7 +1153,7 @@ http_response_code(200);
 echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 ```
 ---
-#### public/api/run-start.php
+#### ``public/api/run-start.php``
 
 Receives the opening prompt and selected orchestrator profile slug. Validates all paths, checks that no run is already active via `/proc/<PID>`, then launches the Python orchestrator as a background process with `nohup`. Returns the PID and start time.
 
@@ -1286,7 +1296,7 @@ echo json_encode(['ok' => true, 'message' => 'Run started', 'pid' => $pid,
     'started_at' => $meta['started_at'], 'orchestrator_name' => $orchestratorName]);
 ```
 ---
-#### public/api/run-status.php
+#### ``public/api/run-status.php``
 
 Polled by the frontend every 5 seconds. Checks process liveness in `/proc`, reads the latest transcript from the most recent `run-ab-*` directory, and transitions the status machine (`running` → `completed` / `failed` / `stopped`). Returns the full transcript entries and log tails.
 
@@ -1426,7 +1436,7 @@ echo json_encode([
 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
-#### public/api/run-stop.php
+#### ``public/api/run-stop.php``
 
 Sends `SIGTERM` to the active PID and waits 300 ms. If the process is still alive, sends `SIGKILL`. Cleans up the PID file and updates the meta file with a `stopped` status and stop timestamp.
 
@@ -1503,7 +1513,7 @@ http_response_code(200);
 echo json_encode(['ok' => true, 'message' => 'Run stopped', 'pid' => $pid]);
 ```
 ---
-#### public/api/orchestrators-list.php
+#### ``public/api/orchestrators-list.php``
 
 Scans `storage/orchestrators/` for `.json` files and returns a sorted list of profile names, slugs, descriptions, and last-modified dates. Used by the frontend to populate the profile selector.
 
@@ -1544,7 +1554,7 @@ echo json_encode(['ok' => true, 'items' => $items, 'count' => count($items)],
     JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
-#### public/api/orchestrator-read.php
+#### ``public/api/orchestrator-read.php``
 
 Loads a single orchestrator profile by slug from `storage/orchestrators/`. All fields are normalized and clamped to valid ranges before being returned. Returns 404 if the slug does not match any file.
 
@@ -1630,7 +1640,7 @@ echo json_encode(['ok' => true, 'profile' => normalizeProfile($decoded, $slug)],
     JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
-#### public/api/orchestrator-save.php
+#### ``public/api/orchestrator-save.php``
 
 Writes or overwrites an orchestrator profile JSON file in `storage/orchestrators/`. The slug is derived from the profile name by sanitization. All numeric fields are clamped to defined min/max ranges on write.
 
@@ -1732,7 +1742,7 @@ echo json_encode(['ok' => true, 'message' => 'Orchestrator saved', 'slug' => $sl
     JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ```
 ---
-#### public/assets/js/app.js
+#### ``public/assets/js/app.js``
 
 Self-contained IIFE, no framework. Initializes on page load, binds all button events, and starts a polling loop calling `status.php` and `run-status.php` every 5 seconds. Handles the full profile load/save/save-as cycle and renders transcript entries into the live panel.
 
@@ -2120,7 +2130,7 @@ Frontend controller — IIFE, no framework. Polls `status.php` and `run-status.p
 })();
 ```
 ---
-#### public/assets/css/style.css
+#### ``public/assets/css/style.css``
 
 Dark neon-blue theme built entirely with CSS custom properties. No framework dependency. Color ramps, border styles, and component states are all defined on `:root` and applied consistently across node cards, run state badges, and transcript message cards.
 
@@ -2209,7 +2219,7 @@ html, body { margin: 0; padding: 0; min-height: 100%;
 
 ---
 
-#### SYSTEM DIRECTORY LAYOUT
+#### ``SYSTEM DIRECTORY LAYOUT``
 
 Complete reference of all paths used by the project across both nodes. Covers llama.cpp binaries, model files, orchestrator scripts, web application files, persistent storage, systemd services, and CUDA installation.
 
@@ -2245,7 +2255,7 @@ Complete reference of all paths used by the project across both nodes. Covers ll
 ```
 
 ---
-#### DEPLOYED MODEL
+#### ``DEPLOYED MODEL``
 
 Two distinct models are deployed, one per node. The model choice on each node is constrained by available VRAM. Both use Q4_K_M quantization which offers a good balance between inference speed and output quality on consumer-grade GPUs.
 
@@ -2269,7 +2279,7 @@ Two distinct models are deployed, one per node. The model choice on each node is
 | Node | fhc (DARKAI) - RTX 3050 4 GB VRAM |
 
 ---
-#### REPOSITORY DIRECTORY
+#### ``REPOSITORY DIRECTORY``
 
 Complete list of all files and directories in the repository. Each entry maps directly to a component of the deployed system.
 
@@ -2299,4 +2309,4 @@ Complete list of all files and directories in the repository. Each entry maps di
 
 ---
 
-##### KUSANAGI8200 - THE KUZ NETWORK - @2026
+##### ``KUSANAGI8200 - THE KUZ NETWORK - @2026``
