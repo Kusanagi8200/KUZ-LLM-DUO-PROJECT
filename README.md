@@ -168,7 +168,7 @@ keeping execution logic isolated in Python.
 The web application acts strictly as a control and visualization
 interface.
 
-Architecture -->
+`Architecture -->`
 
 -   PHP frontend/backend for UI and request handling\
 -   Python orchestrator for execution logic\
@@ -177,7 +177,7 @@ Architecture -->
 Communication is handled through HTTP requests between PHP and the
 orchestrator.
 
-Application structure -->
+`Application structure -->`
 
 -   /public → entry point\
 -   /assets → UI styling\
@@ -187,18 +187,18 @@ Application structure -->
 
 The interface is divided into two sections.
 
-STATUS -->
+`STATUS -->`
 - node availability\
 - hardware metrics\
 - API connectivity
 
-DISCUSSION -->
+`DISCUSSION -->`
 - prompt input\
 - run controls\
 - profiles\
 - live transcript
 
-Execution flow -->
+`Execution flow -->`
 -   user submits prompt\
 -   PHP sends request\
 -   orchestrator runs loop\
@@ -331,15 +331,15 @@ same application loop.
 The orchestrator exposes a minimal HTTP interface to allow interaction
 with the web console.
 
-Example endpoints -->
+`Example endpoints -->`
 
 POST /run\
 Triggers a new orchestration session.
 
-Payload --> { "prompt": "initial topic", "max_turns": 10, "temperature":
+`Payload -->` { "prompt": "initial topic", "max_turns": 10, "temperature":
 0.7, "profile": "default" }
 
-Response --> { "status": "running", "session_id": "uuid" }
+`Response -->` { "status": "running", "session_id": "uuid" }
 
 GET /status/{session_id}\
 Returns current execution state.
@@ -362,7 +362,7 @@ User → Web UI (PHP) → API call → Python Orchestrator\
 
 #### `SESSION FILE STRUCTURE`
 
-Each session can be stored as JSON:
+Each session can be stored as JSON -->
 
 { "session_id": "...", "timestamp": "...", "turns": \[ { "speaker":
 "model_a", "content": "...", "time": "..." }, { "speaker": "model_b",
@@ -374,7 +374,7 @@ This enables replay, audit, and debugging.
 
 #### `FUTURE EXTENSIONS`
 
-Planned improvements:
+Planned improvements -->
 
 -   WebSocket streaming for real-time tokens\
 -   Multi-model orchestration (more than 2 nodes)\
