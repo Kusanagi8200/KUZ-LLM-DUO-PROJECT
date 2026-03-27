@@ -11,7 +11,7 @@ The goal will not be to produce a simple demonstration effect. The project will 
 
 The real interest of the lab will lie in this integration layer, meaning the way multiple technical components will be connected cleanly in order to create a continuous inference loop between two model instances.
 
-The installation has not started yet. This document therefore presents the planned architecture, the tools that will be used, and the way the lab will be built from a technical perspective.
+The installation is done. This document therefore presents the planned architecture, the tools that will be used, and the way the lab will be built from a technical perspective.
 
 ___________________________________________________________________________________________________________________
 #### ``OVERALL ARCHITECTURE``
