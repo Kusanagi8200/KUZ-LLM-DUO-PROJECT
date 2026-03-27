@@ -159,9 +159,7 @@ logic.
 
 #### `ORCHESTRATOR DESIGN`
 
-------------------------------------------------------------------------
-
-#### `WEB CONSOLE ORCHESTRATOR — APPLICATION LAYER`
+#### `WEB CONSOLE ORCHESTRATOR - APPLICATION LAYER`
 
 The project integrates a web-based control console developed in PHP.
 This layer provides real-time interaction with the orchestrator while
@@ -170,7 +168,7 @@ keeping execution logic isolated in Python.
 The web application acts strictly as a control and visualization
 interface.
 
-Architecture:
+Architecture -->
 
 -   PHP frontend/backend for UI and request handling\
 -   Python orchestrator for execution logic\
@@ -179,7 +177,7 @@ Architecture:
 Communication is handled through HTTP requests between PHP and the
 orchestrator.
 
-Application structure:
+Application structure -->
 
 -   /public → entry point\
 -   /assets → UI styling\
@@ -189,17 +187,18 @@ Application structure:
 
 The interface is divided into two sections.
 
-STATUS: - node availability\
+STATUS -->
+- node availability\
 - hardware metrics\
 - API connectivity
 
-DISCUSSION: - prompt input\
+DISCUSSION -->
+- prompt input\
 - run controls\
 - profiles\
 - live transcript
 
-Execution flow:
-
+Execution flow -->
 -   user submits prompt\
 -   PHP sends request\
 -   orchestrator runs loop\
@@ -327,20 +326,20 @@ same application loop.
 
 ------------------------------------------------------------------------
 
-#### `API ENDPOINTS — ORCHESTRATOR`
+#### `API ENDPOINTS - ORCHESTRATOR`
 
 The orchestrator exposes a minimal HTTP interface to allow interaction
 with the web console.
 
-Example endpoints:
+Example endpoints -->
 
 POST /run\
 Triggers a new orchestration session.
 
-Payload: { "prompt": "initial topic", "max_turns": 10, "temperature":
+Payload --> { "prompt": "initial topic", "max_turns": 10, "temperature":
 0.7, "profile": "default" }
 
-Response: { "status": "running", "session_id": "uuid" }
+Response --> { "status": "running", "session_id": "uuid" }
 
 GET /status/{session_id}\
 Returns current execution state.
