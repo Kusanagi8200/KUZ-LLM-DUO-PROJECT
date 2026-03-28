@@ -2286,8 +2286,8 @@ The model choice on each node is constrained by available VRAM. Both use Q4_K_M 
 
 | Parameter | Value |
 |---|---|
-| Name | `ggml-org/gemma-3-1b-it-GGUF:Q4_K_M` |
-| Family | Google Gemma 3 - 1B parameters |
+| Name | `bartowski_Mistral-7B-Instruct-v0.3-GGUF_Mistral-7B-Instruct-v0.3-Q4_K_M.gguf` |
+| Family | Mistral - 7B parameters |
 | Quantization | Q4_K_M |
 | Prompt perf. | - |
 | Generation perf. | - |
