@@ -1,6 +1,6 @@
 #### `LLM - DUO - RUN AWAY - #01`
 
-#### `WHAT'S INSIDE THE BLACK BOX ?`
+#### `WHAT'S INSIDE THE BLACK BOX ?` 
 
 ------------------------------------------------------------------------
 
