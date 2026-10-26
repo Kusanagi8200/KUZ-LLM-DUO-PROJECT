@@ -61,7 +61,7 @@ management of turn order.
 
 Machine A will be the main workstation of the lab. It will be equipped
 with an Intel i9 processor, 32 GB RAM, and an NVIDIA RTX 5060 8G VRAM.
-This machine will have a dual role: it will run the first model and also
+This machine will have a dual role --> it will run the first model and also
 host the entire control logic of the experiment.
 
 Machine B will serve as the second inference node. It will be based on
@@ -106,7 +106,7 @@ The goal will not be to lock the project immediately to a single model,
 but rather to create a flexible technical base that will make it easy to
 switch engines or models over time.
 
-The overall design will therefore rely on four clearly separated layers:
+The overall design will therefore rely on four clearly separated layers -->
 the Linux system, the NVIDIA GPU stack, the local inference engine, and
 the orchestration program.
 
@@ -248,7 +248,7 @@ models do not have persistent memory, the orchestrator will have to
 rebuild at each turn a prompt containing at least the initial topic, the
 latest exchanged messages, and, when required, a condensed version of
 the older parts. This means that the program will not merely pass text
-between two APIs: it will also perform actual contextual reconstruction.
+between two APIs --> it will also perform actual contextual reconstruction.
 
 As the discussion grows longer, the orchestrator will also have to
 handle another standard issue --\> the maximum context size supported by
@@ -336,10 +336,10 @@ with the web console.
 POST /run\
 Triggers a new orchestration session.
 
-`Payload -->` { "prompt": "initial topic", "max_turns": 10, "temperature":
-0.7, "profile": "default" }
+`Payload -->` { "prompt" --> "initial topic", "max_turns" --> 10, "temperature" -->
+0.7, "profile" --> "default" }
 
-`Response -->` { "status": "running", "session_id": "uuid" }
+`Response -->` { "status" --> "running", "session_id" --> "uuid" }
 
 GET /status/{session_id}\
 Returns current execution state.
@@ -364,9 +364,9 @@ User → Web UI (PHP) → API call → Python Orchestrator\
 
 Each session can be stored as JSON -->
 
-{ "session_id": "...", "timestamp": "...", "turns": \[ { "speaker":
-"model_a", "content": "...", "time": "..." }, { "speaker": "model_b",
-"content": "...", "time": "..." } \] }
+{ "session_id" --> "...", "timestamp" --> "...", "turns" --> \[ { "speaker" -->
+"model_a", "content" --> "...", "time" --> "..." }, { "speaker" --> "model_b",
+"content" --> "...", "time" --> "..." } \] }
 
 This enables replay, audit, and debugging.
 
