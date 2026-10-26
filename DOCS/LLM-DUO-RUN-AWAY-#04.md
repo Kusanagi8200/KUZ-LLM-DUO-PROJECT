@@ -463,9 +463,9 @@ All run parameters are configurable via CLI flags. Output is written to a timest
 
 ``Interpreter -->`` `/opt/llm/orchestrator/venv/bin/python3`
 
-Default URLs:
-- Node A: `http://10.141.52.19:8080/v1/chat/completions`
-- Node B: `http://10.141.52.126:8080/v1/chat/completions`
+Default URLs -->
+- Node A --> `http://10.141.52.19:8080/v1/chat/completions`
+- Node B --> `http://10.141.52.126:8080/v1/chat/completions`
 
 Output --> `/opt/llm/orchestrator/runs/run-ab-YYYYMMDD-HHMMSS/`
 
@@ -672,11 +672,11 @@ The application provides a complete control surface for the lab. The PHP backend
 All state is maintained in flat files under `storage/`.
 
 
-- **Session launch**: web form → parameters → `exec()` PHP to `ORCHESTRATOR-02.py`
-- **Transcript viewer**: reads `transcript.json`/`.md` from `/opt/llm/orchestrator/runs/` → formatted display of exchanges
-- **Service monitoring**: PHP `curl` calls to `/v1/models` on both nodes → real-time UP/DOWN status
-- **Run history**: lists `run-ab-*` directories → browse past sessions
-- **Configuration**: orchestrator parameters exposed in the UI (temperatures, turns, caps)
+- **Session launch** --> web form → parameters → `exec()` PHP to `ORCHESTRATOR-02.py`
+- **Transcript viewer** --> reads `transcript.json`/`.md` from `/opt/llm/orchestrator/runs/` → formatted display of exchanges
+- **Service monitoring** --> PHP `curl` calls to `/v1/models` on both nodes → real-time UP/DOWN status
+- **Run history** --> lists `run-ab-*` directories → browse past sessions
+- **Configuration** --> orchestrator parameters exposed in the UI (temperatures, turns, caps)
 
 ---
 
