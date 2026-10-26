@@ -39,9 +39,9 @@ At the end of this phase, the second node was exposing a working local API throu
 ___________________________________________________________________________________________________________________
 ####  ``3/ BUILDING THE ORCHESTRATOR``
 
-Once both nodes were able to answer locally, the next essential component of the project had to be built: the orchestrator.
+Once both nodes were able to answer locally, the next essential component of the project had to be built --> the orchestrator.
 
-This orchestrator was developed as a Python script running from the main node. Its job is to manage the dialogue logic between the two models: entry point, turn alternation, 
+This orchestrator was developed as a Python script running from the main node. Its job is to manage the dialogue logic between the two models --> entry point, turn alternation, 
 forwarding of responses, output length limits, and transcript generation for each run.
 
 The objective at this stage was not yet to build a finished application, but rather to create a simple, readable, modular base capable of running a real A ↔ B loop in a stable way.
@@ -53,7 +53,7 @@ ________________________________________________________________________________
 
 Once the orchestrator was ready, several dialogue tests were launched between the two nodes.
 
-This phase had a double purpose. On the one hand, it was necessary to validate the purely technical side: both servers respond correctly, the exchange flows properly, 
+This phase had a double purpose. On the one hand, it was necessary to validate the purely technical side --> both servers respond correctly, the exchange flows properly, 
 turn order is respected, and the outputs are archived. On the other hand, it was equally important to observe the conversational behavior of the models themselves.
 
 The first tests showed that the infrastructure was working well, but they also made one thing very clear --> a dialogue between two models has to be strongly framed if 
@@ -67,7 +67,7 @@ ________________________________________________________________________________
 
 To make the system easier to use, a small Bash launcher was then added to the project.
 
-The idea was straightforward: avoid typing the full orchestration command manually every time a new test had to be launched. 
+The idea was straightforward --> avoid typing the full orchestration command manually every time a new test had to be launched. 
 This interactive launcher now allows the user to fill only the useful variables, such as the opening prompt, the number of turns, or a few output limits, and then start the dialogue automatically between both models.
 
 This Bash layer does not replace the Python orchestrator. It simply acts as a lightweight launch interface, useful for chaining tests more comfortably and making the whole project easier to operate in day-to-day lab work.
